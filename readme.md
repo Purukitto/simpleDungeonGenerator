@@ -1,1 +1,1 @@
-# Simple Dungeon Manager
+# Simple Dungeon Generator
