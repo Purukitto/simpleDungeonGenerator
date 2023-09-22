@@ -1,25 +1,22 @@
 {
-  "name": "simpledungeongenerator",
-  "version": "1.0.0",
-  "description": "Simply generate everything you need to get started with a procedural dungeon.",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Purukitto/simpleDungeonGenerator.git"
-  },
-  "keywords": [
-    "dungeon",
-    "dungeon",
-    "generator",
-    "rougelike"
-  ],
-  "author": "Purukitto",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/Purukitto/simpleDungeonGenerator/issues"
-  },
-  "homepage": "https://github.com/Purukitto/simpleDungeonGenerator#readme"
+	"name": "simpledungeongenerator",
+	"version": "0.0.1",
+	"license": "MIT",
+	"main": "dist/index.js",
+	"module": "dist/index.mjs",
+	"types": "dist/index.d.ts",
+	"scripts": {
+		"build": "tsup index.ts --format cjs,esm --dts",
+		"lint": "tsc"
+	},
+	"type": "module",
+	"devDependencies": {
+		"@changesets/cli": "^2.26.2",
+		"bun-types": "latest",
+		"tsup": "^7.2.0",
+		"typescript": "^5.2.2"
+	},
+	"peerDependencies": {
+		"typescript": "^5.0.0"
+	}
 }
