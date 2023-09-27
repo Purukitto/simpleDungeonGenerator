@@ -31,12 +31,12 @@ export default class Dungeon {
 	#_addRoom(roomTries: number, extraRoomSize: number) {
 		for (let i = 0; i < roomTries; i++) {
 			// TODO: This isn't very flexible or tunable. Do something better here.
-			const size = Math.floor(
-				this.rng() * (3 + extraRoomSize - 1) * 2 + 1
+			const size = Math.max(
+				2,
+				Math.floor(this.rng() * (1 + 2 * extraRoomSize) + 1) +
+					extraRoomSize
 			);
-			const rectangularity = Math.floor(
-				this.rng() * (1 + Math.floor(size / 2)) * 2
-			);
+			const rectangularity = Math.floor(this.rng() * (1 + size / 2));
 
 			let width = size;
 			let height = size;
@@ -48,20 +48,19 @@ export default class Dungeon {
 			}
 
 			const x = Math.floor(
-				this.rng() * (Math.floor(this.bounds.width - width) / 2) * 2 + 1
-			);
-			const y = Math.floor(
-				this.rng() * (Math.floor(this.bounds.height - height) / 2) * 2 +
-					1
+				this.rng() * (this.bounds.width - width - 2) + 2
 			);
 
-			// var room = new Rect(x, y, width, height);
+			const y = Math.floor(
+				this.rng() * (this.bounds.height - height - 2) + 2
+			);
+
 			const room = new Room(x, y, width, height);
 
 			var overlaps = false;
 
 			for (let otherRoom of this.rooms) {
-				if (room.distanceTo(otherRoom) <= 0) {
+				if (room.overlap(otherRoom)) {
 					overlaps = true;
 					break;
 				}
@@ -72,9 +71,7 @@ export default class Dungeon {
 			this.rooms.add(room);
 
 			// _startRegion(); TODO: Implement regions
-			// for (var pos in room) {
-			// 	this.#_carve(pos);
-			// }
+
 			room.getTiles().map((pos) => {
 				// Check if pos is within the map bounds
 				if (
@@ -83,7 +80,7 @@ export default class Dungeon {
 					pos.y >= 0 &&
 					pos.y < this.bounds.height
 				) {
-					this.#_carve(pos);
+					this.#_carve(pos); // TODO: can pass i value to mark rooms with a flag
 				}
 			});
 		}
