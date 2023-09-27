@@ -1,36 +1,36 @@
 {
-	"name": "simpledungeongenerator",
-	"version": "0.0.1",
-	"license": "MIT",
-	"main": "dist/index.js",
-	"module": "dist/index.mjs",
-	"types": "dist/index.d.ts",
-	"scripts": {
-		"build": "tsup index.ts --format cjs,esm --dts",
-		"release": "bun run build && changeset publish",
-		"lint": "tsc"
-	},
-	"type": "module",
-	"devDependencies": {
-		"@changesets/cli": "^2.26.2",
-		"@types/seedrandom": "^3.0.5",
-		"bun-types": "latest",
-		"tsup": "^7.2.0",
-		"typescript": "^5.2.2"
-	},
-	"peerDependencies": {
-		"typescript": "^5.0.0"
-	},
-	"author": {
-		"name": "Purukitto",
-		"url": "https://github.com/Purukitto"
-	},
-	"bugs": {
-		"url": "https://github.com/Purukitto/simpleDungeonGenerator/issues"
-	},
-	"homepage": "https://github.com/Purukitto/simpleDungeonGenerator#readme",
-	"dependencies": {
-		"seedrandom": "^3.0.5",
-		"underscore": "^1.13.6"
-	}
+  "name": "simpledungeongenerator",
+  "version": "0.0.1",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsup index.ts --format cjs,esm --dts",
+    "release": "bun run build && changeset publish",
+    "lint": "tsc"
+  },
+  "type": "module",
+  "devDependencies": {
+    "@changesets/cli": "^2.26.2",
+    "@types/seedrandom": "^3.0.5",
+    "bun-types": "latest",
+    "tsup": "^7.2.0",
+    "typescript": "^5.2.2"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "author": {
+    "name": "Purukitto",
+    "url": "https://github.com/Purukitto"
+  },
+  "bugs": {
+    "url": "https://github.com/Purukitto/simpleDungeonGenerator/issues"
+  },
+  "homepage": "https://github.com/Purukitto/simpleDungeonGenerator#readme",
+  "dependencies": {
+    "seedrandom": "^3.0.5",
+    "underscore": "^1.13.6"
+  }
 }
