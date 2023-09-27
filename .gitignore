@@ -170,3 +170,4 @@ dist
 
 # Own
 test/
+.DS_Store
