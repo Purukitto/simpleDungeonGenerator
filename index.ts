@@ -45,7 +45,14 @@ function simpleDungeon(options: GeneratorOptions) {
 		  }; // Tiles to use
 
 	// Create dungeon object
-	const dungeon = new Dungeon(maxH, maxW, seed, roomTries, extraRoomSize, tiles);
+	const dungeon = new Dungeon(
+		maxH,
+		maxW,
+		seed,
+		roomTries,
+		extraRoomSize,
+		tiles
+	);
 	const dungeonMap = dungeon.map;
 
 	return dungeonMap;

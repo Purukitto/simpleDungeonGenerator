@@ -11,12 +11,13 @@ export default class Room {
 		this.height = height;
 	}
 
-	distanceTo(other: Room) {
-		const center1 = this.getCenter(this);
-		const center2 = this.getCenter(other);
-		const dx = center1.x - center2.x;
-		const dy = center1.y - center2.y;
-		return Math.sqrt(dx * dx + dy * dy);
+	overlap(room: Room) {
+		return (
+			this.x <= room.x + room.width &&
+			this.x + this.width >= room.x &&
+			this.y <= room.y + room.height &&
+			this.y + this.height >= room.y
+		);
 	}
 
 	getCenter(room: Room) {
