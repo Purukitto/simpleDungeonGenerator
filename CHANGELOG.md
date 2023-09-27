@@ -1,5 +1,11 @@
 # simpledungeongenerator
 
+## 0.1.1
+
+### Patch Changes
+
+- ec73836: Fix carving function
+
 ## 0.1.0
 
 ### Minor Changes
