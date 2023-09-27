@@ -89,7 +89,7 @@ export default class Dungeon {
 	#_carve(pos: { x: number; y: number }, tileType?: any) {
 		// TODO: Implement tile types
 		if (!tileType) tileType = this.tiles.floor;
-		const row = this.map[pos.x];
-		if (row) row[pos.y] = tileType;
+		const row = this.map[pos.y];
+		if (row) row[pos.x] = tileType;
 	}
 }
