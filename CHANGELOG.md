@@ -1,5 +1,11 @@
 # simpledungeongenerator
 
+## 0.5.0
+
+### Minor Changes
+
+- 6bc4eb7: Better defaults
+
 ## 0.4.0
 
 ### Minor Changes
