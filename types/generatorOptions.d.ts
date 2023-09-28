@@ -1,5 +1,5 @@
 type GeneratorOptions = {
-	seed?: string;
+	seed: string;
 	maxH: number;
 	maxW: number;
 	type: string;
@@ -18,4 +18,8 @@ type GeneratorOptions = {
 		tree: string;
 	};
 	indexedRooms: boolean;
+	indexOptions: {
+		startingIndex: number;
+		colour: boolean;
+	};
 };

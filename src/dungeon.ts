@@ -15,7 +15,8 @@ export default class Dungeon {
 		extraRoomSize: number,
 		windingPercent: number,
 		tiles: GeneratorOptions["tiles"],
-		indexedRooms: boolean
+		indexedRooms: boolean,
+		indexOptions: GeneratorOptions["indexOptions"]
 	) {
 		this.rng = seedrandom(seed);
 		this.bounds = { height: maxH, width: maxW };
@@ -27,7 +28,7 @@ export default class Dungeon {
 		});
 		this.rooms = new Set();
 
-		this.#_addRoom(roomTries, extraRoomSize, indexedRooms);
+		this.#_addRoom(roomTries, extraRoomSize, indexedRooms, indexOptions);
 
 		// Fill in all of the empty space with mazes.
 		for (var y = 1; y < this.bounds.height - 1; y += 2) {
@@ -46,8 +47,14 @@ export default class Dungeon {
 		console.log(this.map.map((row) => row.join(" ")).join("\n"));
 	}
 
-	#_addRoom(roomTries: number, extraRoomSize: number, indexedRooms: boolean) {
-		let roomIndex = 1;
+	#_addRoom(
+		roomTries: number,
+		extraRoomSize: number,
+		indexedRooms: boolean,
+		indexOptions: GeneratorOptions["indexOptions"]
+	) {
+		let roomIndex = indexOptions.startingIndex;
+
 		for (let i = 0; i < roomTries; i++) {
 			// TODO: This isn't very flexible or tunable. Do something better here.
 			const size = Math.max(
@@ -99,7 +106,7 @@ export default class Dungeon {
 				) {
 					if (indexedRooms) {
 						this.#_carve(pos, roomIndex);
-					} else this.#_carve(pos); // TODO: can pass i value to mark rooms with a flag
+					} else this.#_carve(pos);
 				}
 			});
 

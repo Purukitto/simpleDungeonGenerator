@@ -25,7 +25,7 @@ function simpleDungeon(options: GeneratorOptions) {
 			? options.windingPercent
 			: 0
 		: 0; // Chance to add winding paths between rooms
-	const tiles = options.tiles
+	const tiles = options.tiles //TODO: FIX OPTIONAL PARAMETERS INSIDE OBJECTS
 		? options.tiles
 		: {
 				floor: "⛶",
@@ -39,6 +39,11 @@ function simpleDungeon(options: GeneratorOptions) {
 				tree: "t",
 		  }; // Tiles to use
 	const indexedRooms = options.indexedRooms ? options.indexedRooms : false; // Whether or not to index rooms
+	const indexOptions = options.indexOptions
+		? options.indexOptions
+		: { startingIndex: 1, colour: false }; // Options for indexing rooms
+
+	console.log(options);
 
 	// Create and return dungeon object
 	return new Dungeon(
@@ -49,7 +54,8 @@ function simpleDungeon(options: GeneratorOptions) {
 		extraRoomSize,
 		windingPercent,
 		tiles,
-		indexedRooms
+		indexedRooms,
+		indexOptions
 	);
 }
 
