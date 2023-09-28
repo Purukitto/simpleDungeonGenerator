@@ -1,5 +1,11 @@
 # simpledungeongenerator
 
+## 0.4.0
+
+### Minor Changes
+
+- dd4fdfd: Indexing options with number indexing and random colour indexing
+
 ## 0.3.2
 
 ### Patch Changes
