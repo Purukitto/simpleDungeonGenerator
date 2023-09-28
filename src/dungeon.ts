@@ -41,7 +41,7 @@ export default class Dungeon {
 		this.#_removeDeadEnds();
 	}
 
-	print() {
+	drawToConsole() {
 		console.log(this.map.map((row) => row.join(" ")).join("\n"));
 	}
 
