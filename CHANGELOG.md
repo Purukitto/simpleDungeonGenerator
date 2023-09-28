@@ -1,5 +1,11 @@
 # simpledungeongenerator
 
+## 0.2.0
+
+### Minor Changes
+
+- 4288eda: Create basic path to connect disconnected rooms
+
 ## 0.1.1
 
 ### Patch Changes
