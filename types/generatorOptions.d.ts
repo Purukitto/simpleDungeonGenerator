@@ -17,4 +17,5 @@ type GeneratorOptions = {
 		grass: string;
 		tree: string;
 	};
+	indexedRooms: boolean;
 };

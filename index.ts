@@ -38,6 +38,7 @@ function simpleDungeon(options: GeneratorOptions) {
 				grass: "g",
 				tree: "t",
 		  }; // Tiles to use
+	const indexedRooms = options.indexedRooms ? options.indexedRooms : false; // Whether or not to index rooms
 
 	// Create and return dungeon object
 	return new Dungeon(
@@ -47,7 +48,8 @@ function simpleDungeon(options: GeneratorOptions) {
 		roomTries,
 		extraRoomSize,
 		windingPercent,
-		tiles
+		tiles,
+		indexedRooms
 	);
 }
 
