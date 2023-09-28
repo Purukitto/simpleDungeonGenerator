@@ -1,5 +1,36 @@
 import Dungeon from "./src/dungeon";
 
+const defaultTiles = {
+	floor: "⛶",
+	path: "·",
+	wall: "■",
+	table: "T",
+	openDoor: "O",
+	closedDoor: "C",
+	stairs: "S",
+	grass: "g",
+	tree: "t",
+};
+
+const defaultIndexOptions = {
+	startingIndex: 1,
+	number: false,
+	colour: false,
+};
+
+const defaultOptions = {
+	maxH: 50,
+	maxW: 50,
+	seed: "purukitto",
+	type: "Base",
+	roomTries: 100,
+	extraRoomSize: 0,
+	windingPercent: 0,
+	tiles: defaultTiles,
+	indexedRooms: false,
+	indexOptions: defaultIndexOptions,
+};
+
 /**
  *
  * @param seed
@@ -8,7 +39,8 @@ import Dungeon from "./src/dungeon";
  *
  * Based on https://journal.stuffwithstuff.com/2014/12/21/rooms-and-mazes/
  */
-function simpleDungeon(options: GeneratorOptions) {
+function simpleDungeon(options?: GeneratorOptions) {
+	if (!options) options = defaultOptions;
 	// Options for the dungeon generator
 	const maxH = options.maxH; // Max height
 	const maxW = options.maxW; // Max width
@@ -25,24 +57,14 @@ function simpleDungeon(options: GeneratorOptions) {
 			? options.windingPercent
 			: 0
 		: 0; // Chance to add winding paths between rooms
-	const tiles = options.tiles //TODO: FIX OPTIONAL PARAMETERS INSIDE OBJECTS
-		? options.tiles
-		: {
-				floor: "⛶",
-				path: "·",
-				wall: "■",
-				table: "T",
-				openDoor: "O",
-				closedDoor: "C",
-				stairs: "S",
-				grass: "g",
-				tree: "t",
-		  }; // Tiles to use
+	const tiles = options.tiles
+		? { ...defaultTiles, ...options.tiles }
+		: defaultTiles; // Tiles to use
 	const indexedRooms = options.indexedRooms ? options.indexedRooms : false; // Whether or not to index rooms
 	const indexOptions = options.indexOptions
-		? options.indexOptions
-		: { startingIndex: 1, number: false, colour: false }; // Options for indexing rooms
-		
+		? { ...defaultIndexOptions, ...options.indexOptions }
+		: defaultIndexOptions; // Options for indexing rooms
+
 	// Create and return dungeon object
 	return new Dungeon(
 		maxH,

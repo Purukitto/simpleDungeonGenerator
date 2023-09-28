@@ -1,0 +1,5 @@
+---
+"simpledungeongenerator": minor
+---
+
+Better defaults
