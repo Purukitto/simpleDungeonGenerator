@@ -43,8 +43,8 @@ function simpleDungeon(options: GeneratorOptions) {
 				tree: "t",
 		  }; // Tiles to use
 
-	// Create dungeon object
-	const dungeon = new Dungeon(
+	// Create and return dungeon object
+	return new Dungeon(
 		maxH,
 		maxW,
 		seed,
@@ -53,9 +53,6 @@ function simpleDungeon(options: GeneratorOptions) {
 		windingPercent,
 		tiles
 	);
-	const dungeonMap = dungeon.map;
-
-	return dungeonMap;
 }
 
 export default simpleDungeon;

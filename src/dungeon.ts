@@ -41,6 +41,10 @@ export default class Dungeon {
 		this.#_removeDeadEnds();
 	}
 
+	print() {
+		console.log(this.map.map((row) => row.join(" ")).join("\n"));
+	}
+
 	#_addRoom(roomTries: number, extraRoomSize: number) {
 		for (let i = 0; i < roomTries; i++) {
 			// TODO: This isn't very flexible or tunable. Do something better here.
@@ -245,9 +249,5 @@ export default class Dungeon {
 		}
 
 		return positions;
-	}
-
-	print() {
-		console.log(this.map.map((row) => row.join("")).join("\n"));
 	}
 }
