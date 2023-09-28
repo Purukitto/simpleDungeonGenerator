@@ -1,5 +1,11 @@
 # simpledungeongenerator
 
+## 0.3.1
+
+### Patch Changes
+
+- 73443ca: Change some defaults
+
 ## 0.3.0
 
 ### Minor Changes
