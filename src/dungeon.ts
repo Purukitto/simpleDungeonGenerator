@@ -37,6 +37,8 @@ export default class Dungeon {
 				this.#_growMaze(pos, windingPercent);
 			}
 		}
+
+		this.#_removeDeadEnds();
 	}
 
 	#_addRoom(roomTries: number, extraRoomSize: number) {
@@ -196,6 +198,53 @@ export default class Dungeon {
 			return false;
 
 		return this.#_isWall(oneStep!) && this.#_isWall(twoStep!);
+	}
+
+	#_removeDeadEnds() {
+		let done = false;
+
+		while (!done) {
+			done = true;
+
+			for (let pos of this.#_inflateBounds(this.bounds, -1)) {
+				if (this.#_getTile(pos) == this.tiles.wall) continue;
+
+				// If it only has one exit, it's a dead end.
+				let exits = 0;
+				for (let dir of ["N", "S", "E", "W"]) {
+					if (
+						this.#_getTile(this.#_addDirection(pos, dir)!) !=
+						this.tiles.wall
+					)
+						exits++;
+				}
+
+				if (exits != 1) continue;
+
+				done = false;
+				this.#_carve(pos, this.tiles.wall);
+			}
+		}
+	}
+
+	#_inflateBounds(bounds: { height: number; width: number }, value: number) {
+		const positions = [];
+
+		for (
+			let y = Math.max(0, -value);
+			y < Math.min(bounds.height, bounds.height - value);
+			y++
+		) {
+			for (
+				let x = Math.max(0, -value);
+				x < Math.min(bounds.width, bounds.width - value);
+				x++
+			) {
+				positions.push({ x, y });
+			}
+		}
+
+		return positions;
 	}
 
 	print() {
