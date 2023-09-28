@@ -115,7 +115,7 @@ export default class Dungeon {
 		let cells: { x: number; y: number }[] = [];
 		let lastDir: string = "";
 
-		this.#_carve(start, "_"); // just floors like room
+		this.#_carve(start);
 
 		cells.push(start);
 
@@ -148,8 +148,8 @@ export default class Dungeon {
 					)[0]!;
 				}
 
-				this.#_carve(this.#_addDirection(cell, dir)!, "_");
-				this.#_carve(this.#_addDirection(cell, dir, 2)!, "_");
+				this.#_carve(this.#_addDirection(cell, dir)!);
+				this.#_carve(this.#_addDirection(cell, dir, 2)!);
 
 				cells.push(this.#_addDirection(cell, dir, 2)!);
 				lastDir = dir;
