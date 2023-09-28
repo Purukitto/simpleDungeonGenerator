@@ -15,11 +15,6 @@ function simpleDungeon(options: GeneratorOptions) {
 	const seed = options.seed ? options.seed : ""; // Seed
 	const type = options.type ? options.type : "Base"; // Type of dungeon //TODO: Implement types
 	const roomTries = options.roomTries ? options.roomTries : 100; // Number of times to try to place a room
-	const extraConnectorChance = options.extraConnectorChance
-		? options.extraConnectorChance >= 20
-			? options.extraConnectorChance
-			: 20
-		: 20; // Chance to add extra connectors between rooms
 	const extraRoomSize = options.extraRoomSize
 		? options.extraRoomSize >= 0
 			? options.extraRoomSize

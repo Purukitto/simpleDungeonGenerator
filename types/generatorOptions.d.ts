@@ -4,7 +4,6 @@ type GeneratorOptions = {
 	maxW: number;
 	type: string;
 	roomTries: number;
-	extraConnectorChance: number;
 	extraRoomSize: number;
 	windingPercent: number;
 	tiles: {
