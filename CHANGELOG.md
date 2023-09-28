@@ -1,5 +1,11 @@
 # simpledungeongenerator
 
+## 0.3.2
+
+### Patch Changes
+
+- 28396a0: Change print to drawToConsole
+
 ## 0.3.1
 
 ### Patch Changes
