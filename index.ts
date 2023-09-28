@@ -50,6 +50,7 @@ function simpleDungeon(options: GeneratorOptions) {
 		seed,
 		roomTries,
 		extraRoomSize,
+		windingPercent,
 		tiles
 	);
 	const dungeonMap = dungeon.map;

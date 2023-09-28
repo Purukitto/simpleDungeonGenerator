@@ -13,6 +13,7 @@ export default class Dungeon {
 		seed: string,
 		roomTries: number,
 		extraRoomSize: number,
+		windingPercent: number,
 		tiles: GeneratorOptions["tiles"]
 	) {
 		this.rng = seedrandom(seed);
@@ -26,6 +27,16 @@ export default class Dungeon {
 		this.rooms = new Set();
 
 		this.#_addRoom(roomTries, extraRoomSize);
+
+		// Fill in all of the empty space with mazes.
+		for (var y = 1; y < this.bounds.height - 1; y += 2) {
+			for (var x = 1; x < this.bounds.width - 1; x += 2) {
+				let pos = { x, y };
+				if (!this.#_isWall(pos)) continue;
+
+				this.#_growMaze(pos, windingPercent);
+			}
+		}
 	}
 
 	#_addRoom(roomTries: number, extraRoomSize: number) {
@@ -70,8 +81,6 @@ export default class Dungeon {
 
 			this.rooms.add(room);
 
-			// _startRegion(); TODO: Implement regions
-
 			room.getTiles().map((pos) => {
 				// Check if pos is within the map bounds
 				if (
@@ -91,5 +100,105 @@ export default class Dungeon {
 		if (!tileType) tileType = this.tiles.floor;
 		const row = this.map[pos.y];
 		if (row) row[pos.x] = tileType;
+	}
+
+	#_isWall(pos: { x: number; y: number }) {
+		return this.#_getTile(pos) === this.tiles.wall;
+	}
+
+	#_getTile(pos: { x: number; y: number }) {
+		const row = this.map[pos.y];
+		if (row) return row[pos.x];
+	}
+
+	#_growMaze(start: { x: number; y: number }, windingPercent: number) {
+		let cells: { x: number; y: number }[] = [];
+		let lastDir: string = "";
+
+		this.#_carve(start, "_"); // just floors like room
+
+		cells.push(start);
+
+		while (cells.length > 0) {
+			let cell = cells.pop();
+			if (!cell) break;
+
+			// See which adjacent cells are open.
+			let unmadeCells = [];
+
+			for (const dir of ["N", "S", "E", "W"]) {
+				if (this.#_canCarve(cell, dir)) {
+					unmadeCells.push(dir);
+				}
+			}
+
+			if (unmadeCells.length > 0) {
+				// Based on how "windy" passages are, try to prefer carving in the
+				// same direction.
+				let dir: string;
+				if (
+					unmadeCells.includes(lastDir) &&
+					Math.floor(this.rng() * 101) > windingPercent
+				) {
+					dir = lastDir;
+				} else {
+					dir = unmadeCells.splice(
+						Math.floor(this.rng() * unmadeCells.length),
+						1
+					)[0]!;
+				}
+
+				this.#_carve(this.#_addDirection(cell, dir)!, "_");
+				this.#_carve(this.#_addDirection(cell, dir, 2)!, "_");
+
+				cells.push(this.#_addDirection(cell, dir, 2)!);
+				lastDir = dir;
+			} else {
+				// No adjacent uncarved cells.
+				cells.pop();
+
+				// This path has ended.
+				lastDir = "";
+			}
+		}
+	}
+
+	#_addDirection(pos: { x: number; y: number }, dir: string, stepValue = 1) {
+		if (dir == "N") {
+			return { x: pos.x, y: pos.y - stepValue };
+		}
+		if (dir == "S") {
+			return { x: pos.x, y: pos.y + stepValue };
+		}
+		if (dir == "E") {
+			return { x: pos.x + stepValue, y: pos.y };
+		}
+		if (dir == "W") {
+			return { x: pos.x - stepValue, y: pos.y };
+		}
+	}
+
+	#_canCarve(pos: { x: number; y: number }, dir: string) {
+		const oneStep = this.#_addDirection(pos, dir);
+		const twoStep = this.#_addDirection(pos, dir, 2);
+		const threeStep = this.#_addDirection(pos, dir, 3);
+
+		// threeStep are out of bounds, return false
+		if (
+			!oneStep ||
+			!twoStep ||
+			!threeStep ||
+			threeStep.x < 0 ||
+			threeStep.x >= this.bounds.width ||
+			threeStep.y < 0 ||
+			threeStep.y >= this.bounds.height
+		)
+			return false;
+
+		return this.#_isWall(oneStep!) && this.#_isWall(twoStep!);
+	}
+
+	print() {
+		console.log(this.map.map((row) => row.join("")).join("\n"));
 	}
 }
