@@ -3,6 +3,7 @@ export default class Room {
 	y: number;
 	width: number;
 	height: number;
+	color?: string;
 
 	constructor(x: number, y: number, width: number, height: number) {
 		this.x = x;
