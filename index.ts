@@ -42,8 +42,6 @@ function simpleDungeon(options: GeneratorOptions) {
 	const indexOptions = options.indexOptions
 		? options.indexOptions
 		: { startingIndex: 1, number: false, colour: false }; // Options for indexing rooms
-
-		console.log(options);
 		
 	// Create and return dungeon object
 	return new Dungeon(
