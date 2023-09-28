@@ -43,8 +43,6 @@ function simpleDungeon(options: GeneratorOptions) {
 		? options.indexOptions
 		: { startingIndex: 1, colour: false }; // Options for indexing rooms
 
-	console.log(options);
-
 	// Create and return dungeon object
 	return new Dungeon(
 		maxH,

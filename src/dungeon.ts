@@ -1,5 +1,6 @@
 import seedrandom, { PRNG } from "seedrandom";
 import Room from "./room";
+import getRandomHexColor from "./randomHexColour";
 
 export default class Dungeon {
 	map: string[][];
@@ -106,6 +107,8 @@ export default class Dungeon {
 				) {
 					if (indexedRooms) {
 						this.#_carve(pos, roomIndex);
+						if (indexOptions.colour)
+							room.color = getRandomHexColor(this.rng);
 					} else this.#_carve(pos);
 				}
 			});
