@@ -20,6 +20,7 @@ type GeneratorOptions = {
 	indexedRooms: boolean;
 	indexOptions: {
 		startingIndex: number;
+		number: boolean;
 		colour: boolean;
 	};
 };

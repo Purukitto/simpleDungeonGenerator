@@ -106,7 +106,10 @@ export default class Dungeon {
 					pos.y < this.bounds.height
 				) {
 					if (indexedRooms) {
-						this.#_carve(pos, roomIndex);
+						if (indexOptions.number)
+							this.#_carve(pos, roomIndex.toString());
+						else this.#_carve(pos);
+
 						if (indexOptions.colour)
 							room.color = getRandomHexColor(this.rng);
 					} else this.#_carve(pos);
