@@ -1,5 +1,11 @@
 # simpledungeongenerator
 
+## 0.3.0
+
+### Minor Changes
+
+- e57bf2e: Remove dead ends for paths
+
 ## 0.2.0
 
 ### Minor Changes
