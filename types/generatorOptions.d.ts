@@ -9,6 +9,7 @@ type GeneratorOptions = {
 	windingPercent: number;
 	tiles: {
 		floor: string;
+		path: string;
 		wall: string;
 		table: string;
 		openDoor: string;

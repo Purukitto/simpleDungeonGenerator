@@ -121,7 +121,7 @@ export default class Dungeon {
 		let cells: { x: number; y: number }[] = [];
 		let lastDir: string = "";
 
-		this.#_carve(start);
+		this.#_carve(start, this.tiles.path);
 
 		cells.push(start);
 
@@ -154,8 +154,11 @@ export default class Dungeon {
 					)[0]!;
 				}
 
-				this.#_carve(this.#_addDirection(cell, dir)!);
-				this.#_carve(this.#_addDirection(cell, dir, 2)!);
+				this.#_carve(this.#_addDirection(cell, dir)!, this.tiles.path);
+				this.#_carve(
+					this.#_addDirection(cell, dir, 2)!,
+					this.tiles.path
+				);
 
 				cells.push(this.#_addDirection(cell, dir, 2)!);
 				lastDir = dir;

@@ -33,8 +33,9 @@ function simpleDungeon(options: GeneratorOptions) {
 	const tiles = options.tiles
 		? options.tiles
 		: {
-				floor: ".",
-				wall: "#",
+				floor: "⛶",
+				path: "·",
+				wall: "■",
 				table: "T",
 				openDoor: "O",
 				closedDoor: "C",
