@@ -2,12 +2,15 @@ import seedrandom, { PRNG } from "seedrandom";
 import Room from "./room";
 import getRandomHexColor from "./randomHexColour";
 
+type MapTile = string; // Define a type for map tiles.
+
 export default class Dungeon {
 	map: string[][];
 	rng: PRNG;
 	tiles: GeneratorOptions["tiles"];
 	bounds: { height: number; width: number };
 	rooms: Set<Room>;
+
 	constructor(
 		maxH: number,
 		maxW: number,
@@ -41,10 +44,19 @@ export default class Dungeon {
 			}
 		}
 
+		this.#_connectUnconnectedRooms();
 		this.#_removeDeadEnds();
 	}
 
-	drawToConsole() {
+	drawToConsole(withIndex = false) {
+		if (withIndex) {
+			for (const room of this.rooms) {
+				room.getTiles().map((pos) => {
+					this.#_carve(pos, room.index);
+				});
+			}
+		}
+
 		console.log(this.map.map((row) => row.join(" ")).join("\n"));
 	}
 
@@ -105,17 +117,11 @@ export default class Dungeon {
 					pos.y >= 0 &&
 					pos.y < this.bounds.height
 				) {
-					if (indexedRooms) {
-						if (indexOptions.number)
-							this.#_carve(pos, roomIndex.toString());
-						else this.#_carve(pos);
-
-						if (indexOptions.colour)
-							room.color = getRandomHexColor(this.rng);
-					} else this.#_carve(pos);
+					this.#_carve(pos);
+					room.index = roomIndex;
+					room.color = getRandomHexColor(this.rng);
 				}
 			});
-
 			roomIndex++;
 		}
 	}
@@ -245,7 +251,7 @@ export default class Dungeon {
 						exits++;
 				}
 
-				if (exits != 1) continue;
+				if (exits > 1) continue;
 
 				done = false;
 				this.#_carve(pos, this.tiles.wall);
@@ -271,5 +277,137 @@ export default class Dungeon {
 		}
 
 		return positions;
+	}
+
+	#_connectUnconnectedRooms() {
+		const allRooms = Array.from(this.rooms);
+
+		const room = allRooms.pop()!;
+
+		while (allRooms.length > 0) {
+			let toCheckLength = allRooms.length;
+
+			while (toCheckLength > 0) {
+				const otherRoom = allRooms[toCheckLength - 1]!;
+
+				if (this.#_areRoomsConnected(room, otherRoom)) {
+					allRooms.splice(toCheckLength - 1, 1);
+				}
+
+				toCheckLength--;
+			}
+
+			if (allRooms.length === 0) break;
+
+			const closestRoom = allRooms.reduce((prev, curr) => {
+				if (room.distanceTo(curr) < room.distanceTo(prev)) return curr;
+				return prev;
+			});
+
+			if (closestRoom) {
+				this.#_connectRooms(room, closestRoom);
+
+				allRooms.splice(allRooms.indexOf(closestRoom), 1);
+			} else {
+				console.log("Could not connect room.", room.index);
+				throw new Error(
+					`Could not connect room ${room.index} with any other room.`
+				);
+			}
+		}
+	}
+
+	#_connectRooms(room1: Room, room2: Room) {
+		// Bresenham's line algorithm: modified to avoid diagonal lines.
+		const center1 = room1.getCenter();
+		const center2 = room2.getCenter();
+		let startX = center1.x;
+		let startY = center1.y;
+		let endX = center2.x;
+		let endY = center2.y;
+		// Check relative positions and adjust connection direction
+		if (startX > endX) {
+			[startX, endX] = [endX, startX];
+		}
+		if (startY > endY) {
+			[startY, endY] = [endY, startY];
+		}
+		// Connect horizontally first, then vertically
+		for (let x = startX; x <= endX; x++) {
+			if (this.#_getTile({ x, y: startY }) === this.tiles.wall) {
+				this.#_carve({ x, y: startY }, this.tiles.path);
+			}
+		}
+		for (let y = startY; y <= endY; y++) {
+			if (this.#_getTile({ x: endX, y }) === this.tiles.wall) {
+				this.#_carve({ x: endX, y }, this.tiles.path);
+			}
+		}
+	}
+
+	#_areRoomsConnected(room1: Room, room2: Room): boolean {
+		// Create a set to keep track of visited tiles/positions.
+		const visited = new Set<string>();
+
+		// Create a queue for BFS.
+		const queue: { x: number; y: number }[] = [];
+
+		// Find a starting position within the surrounding area that is on a "path" tile.
+		let start = null;
+
+		// Find a valid starting position within the surrounding area.
+		for (const pos of room1.getTiles()) {
+			for (const dir of ["N", "S", "E", "W"]) {
+				const neighborPos = this.#_addDirection(pos, dir)!;
+
+				if (this.#_getTile(neighborPos) === this.tiles.path) {
+					start = neighborPos;
+					break;
+				}
+			}
+			if (start) break; // Found a valid starting position.
+		}
+
+		if (!start) {
+			// No starting position on a neighboring "path" tile found in room1.
+			return false;
+		}
+
+		queue.push(start);
+
+		while (queue.length > 0) {
+			const currentPos = queue.shift()!;
+
+			// Mark the current position as visited.
+			visited.add(`${currentPos.x},${currentPos.y}`);
+
+			// Check if the current position neighbors room2
+			for (const dir of ["N", "S", "E", "W"]) {
+				const neighborPos = this.#_addDirection(currentPos, dir)!;
+
+				if (room2.containsPosition(neighborPos)) {
+					return true; // Found a path between room1 and room2.
+				}
+			}
+
+			// Explore neighboring positions.
+			for (const dir of ["N", "S", "E", "W"]) {
+				const neighborPos = this.#_addDirection(currentPos, dir)!;
+
+				const neighborPosKey = `${neighborPos.x},${neighborPos.y}`;
+
+				// Check if the neighbor position is not visited, and is a valid "path" or "floor" tile.
+				if (
+					!visited.has(neighborPosKey) &&
+					(this.#_getTile(neighborPos) === this.tiles.path ||
+						this.#_getTile(neighborPos) === this.tiles.floor)
+				) {
+					// Add the neighbor position to the queue for further exploration.
+					queue.push(neighborPos);
+				}
+			}
+		}
+
+		return false; // No path found between room1 and room2.
 	}
 }
