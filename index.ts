@@ -12,12 +12,6 @@ const defaultTiles = {
 	tree: "t",
 };
 
-const defaultIndexOptions = {
-	startingIndex: 1,
-	number: false,
-	colour: false,
-};
-
 const defaultOptions = {
 	maxH: 50,
 	maxW: 50,
@@ -27,8 +21,7 @@ const defaultOptions = {
 	extraRoomSize: 0,
 	windingPercent: 0,
 	tiles: defaultTiles,
-	indexedRooms: false,
-	indexOptions: defaultIndexOptions,
+	startIndex: 1,
 };
 
 /**
@@ -44,26 +37,27 @@ function simpleDungeon(options?: GeneratorOptions) {
 	// Options for the dungeon generator
 	const maxH = options.maxH; // Max height
 	const maxW = options.maxW; // Max width
-	const seed = options.seed ? options.seed : ""; // Seed
-	const type = options.type ? options.type : "Base"; // Type of dungeon //TODO: Implement types
-	const roomTries = options.roomTries ? options.roomTries : 100; // Number of times to try to place a room
+	const seed = options.seed ? options.seed : defaultOptions.seed; // Seed
+	const type = options.type ? options.type : defaultOptions.type; // Type of dungeon //TODO: Implement types
+	const roomTries = options.roomTries
+		? options.roomTries
+		: defaultOptions.roomTries; // Number of times to try to place a room
 	const extraRoomSize = options.extraRoomSize
-		? options.extraRoomSize >= 0
+		? options.extraRoomSize >= defaultOptions.extraRoomSize // TODO: Throw error instead of defaulting to 0
 			? options.extraRoomSize
-			: 0
-		: 0; // Allows rooms to be larger
+			: defaultOptions.extraRoomSize
+		: defaultOptions.extraRoomSize; // Allows rooms to be larger
 	const windingPercent = options.windingPercent
-		? options.windingPercent >= 0
+		? options.windingPercent >= defaultOptions.windingPercent // TODO: Throw error instead of defaulting to 0
 			? options.windingPercent
-			: 0
-		: 0; // Chance to add winding paths between rooms
+			: defaultOptions.windingPercent
+		: defaultOptions.windingPercent; // Chance to add winding paths between rooms
 	const tiles = options.tiles
 		? { ...defaultTiles, ...options.tiles }
 		: defaultTiles; // Tiles to use
-	const indexedRooms = options.indexedRooms ? options.indexedRooms : false; // Whether or not to index rooms
-	const indexOptions = options.indexOptions
-		? { ...defaultIndexOptions, ...options.indexOptions }
-		: defaultIndexOptions; // Options for indexing rooms
+	const startIndex = options.startIndex
+		? options.startIndex
+		: defaultOptions.startIndex; // Index to start at
 
 	// Create and return dungeon object
 	return new Dungeon(
@@ -74,8 +68,7 @@ function simpleDungeon(options?: GeneratorOptions) {
 		extraRoomSize,
 		windingPercent,
 		tiles,
-		indexedRooms,
-		indexOptions
+		startIndex
 	);
 }
 

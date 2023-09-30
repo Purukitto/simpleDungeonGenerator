@@ -17,10 +17,5 @@ type GeneratorOptions = {
 		grass: string;
 		tree: string;
 	};
-	indexedRooms: boolean;
-	indexOptions: {
-		startingIndex: number;
-		number: boolean;
-		colour: boolean;
-	};
+	startIndex: number;
 };

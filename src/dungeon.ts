@@ -19,8 +19,7 @@ export default class Dungeon {
 		extraRoomSize: number,
 		windingPercent: number,
 		tiles: GeneratorOptions["tiles"],
-		indexedRooms: boolean,
-		indexOptions: GeneratorOptions["indexOptions"]
+		startIndex: number
 	) {
 		this.rng = seedrandom(seed);
 		this.bounds = { height: maxH, width: maxW };
@@ -32,7 +31,7 @@ export default class Dungeon {
 		});
 		this.rooms = new Set();
 
-		this.#_addRoom(roomTries, extraRoomSize, indexedRooms, indexOptions);
+		this.#_addRoom(roomTries, extraRoomSize, startIndex);
 
 		// Fill in all of the empty space with mazes.
 		for (var y = 1; y < this.bounds.height - 1; y += 2) {
@@ -52,7 +51,7 @@ export default class Dungeon {
 		if (withIndex) {
 			for (const room of this.rooms) {
 				room.getTiles().map((pos) => {
-					this.#_carve(pos, room.index);
+					this.#_carve(pos, room.index.toString());
 				});
 			}
 		}
@@ -60,13 +59,8 @@ export default class Dungeon {
 		console.log(this.map.map((row) => row.join(" ")).join("\n"));
 	}
 
-	#_addRoom(
-		roomTries: number,
-		extraRoomSize: number,
-		indexedRooms: boolean,
-		indexOptions: GeneratorOptions["indexOptions"]
-	) {
-		let roomIndex = indexOptions.startingIndex;
+	#_addRoom(roomTries: number, extraRoomSize: number, startIndex: number) {
+		let roomIndex = startIndex;
 
 		for (let i = 0; i < roomTries; i++) {
 			// TODO: This isn't very flexible or tunable. Do something better here.
@@ -94,7 +88,14 @@ export default class Dungeon {
 				this.rng() * (this.bounds.height - height - 2) + 2
 			);
 
-			const room = new Room(x, y, width, height);
+			const room = new Room(
+				x,
+				y,
+				width,
+				height,
+				roomIndex,
+				getRandomHexColor(this.rng)
+			);
 
 			var overlaps = false;
 
@@ -118,16 +119,13 @@ export default class Dungeon {
 					pos.y < this.bounds.height
 				) {
 					this.#_carve(pos);
-					room.index = roomIndex;
-					room.color = getRandomHexColor(this.rng);
 				}
 			});
 			roomIndex++;
 		}
 	}
 
-	#_carve(pos: { x: number; y: number }, tileType?: any) {
-		// TODO: Implement tile types
+	#_carve(pos: { x: number; y: number }, tileType?: MapTile) {
 		if (!tileType) tileType = this.tiles.floor;
 		const row = this.map[pos.y];
 		if (row) row[pos.x] = tileType;

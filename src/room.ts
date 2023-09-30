@@ -3,14 +3,23 @@ export default class Room {
 	y: number;
 	width: number;
 	height: number;
-	index?: number; // TODO: Fix implement indexing
-	color?: string;
+	index: number;
+	color: string;
 
-	constructor(x: number, y: number, width: number, height: number) {
+	constructor(
+		x: number,
+		y: number,
+		width: number,
+		height: number,
+		index: number,
+		color: string
+	) {
 		this.x = x;
 		this.y = y;
 		this.width = width;
 		this.height = height;
+		this.index = index;
+		this.color = color;
 	}
 
 	overlap(room: Room) {
