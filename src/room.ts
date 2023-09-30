@@ -3,6 +3,7 @@ export default class Room {
 	y: number;
 	width: number;
 	height: number;
+	index?: number; // TODO: Fix implement indexing
 	color?: string;
 
 	constructor(x: number, y: number, width: number, height: number) {
@@ -21,21 +22,48 @@ export default class Room {
 		);
 	}
 
-	getCenter(room: Room) {
+	getCenter() {
 		const center = {
-			x: room.x + room.width / 2,
-			y: room.y + room.height / 2,
+			x: this.x + this.width / 2,
+			y: this.y + this.height / 2,
 		};
 		return center;
 	}
 
+	distanceTo(otherRoom: Room) {
+		const center1 = this.getCenter();
+		const center2 = otherRoom.getCenter();
+		const dx = center1.x - center2.x;
+		const dy = center1.y - center2.y;
+		return Math.sqrt(dx * dx + dy * dy);
+	}
+
 	getTiles() {
 		const tiles = [];
+
 		for (let x = this.x; x < this.x + this.width; x++) {
 			for (let y = this.y; y < this.y + this.height; y++) {
 				tiles.push({ x, y });
 			}
 		}
+
 		return tiles;
+	}
+
+	getRandomPosition() {
+		// Generate a random position within the bounds of the room.
+		const randomX = Math.floor(Math.random() * this.width + this.x);
+		const randomY = Math.floor(Math.random() * this.height + this.y);
+		return { x: randomX, y: randomY };
+	}
+
+	containsPosition(position: { x: number; y: number }) {
+		// Check if the given position is inside the room's bounds.
+		return (
+			position.x >= this.x &&
+			position.x < this.x + this.width &&
+			position.y >= this.y &&
+			position.y < this.y + this.height
+		);
 	}
 }
