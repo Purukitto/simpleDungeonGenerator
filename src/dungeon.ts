@@ -36,7 +36,7 @@
  * 		floor: ".",
  * 		path: " ",
  * 	},
- * 	startIndex: 1,
+ * 	startIndex: 0,
  * };
  *
  * const dungeon = new Dungeon(options);
@@ -125,6 +125,85 @@ export default class Dungeon {
 
 		// Print the modified or original map to the console.
 		console.log(displayMap.map((row) => row.join(" ")).join("\n"));
+	}
+
+	drawToCanvas({ withIndex = false, withColour = false }) {
+		const canvas = document.createElement("canvas");
+		canvas.width = this.bounds.width * 10;
+		canvas.height = this.bounds.height * 10;
+		const ctx = canvas.getContext("2d")!;
+
+		let displayMap: string[][];
+		let tileWidth = 10;
+		let tileHeight = 10;
+
+		if (withIndex) {
+			// Create a copy of the map to display room indices without modifying the original map.
+			displayMap = this.map.map((row) => [...row]);
+			displayMap = displayMap.map((row) => row.map((tile) => tile + " "));
+
+			for (const room of this.rooms) {
+				room.getTiles().forEach((pos) => {
+					// Check if the position is within the map bounds.
+					if (
+						pos.x >= 0 &&
+						pos.x < this.bounds.width &&
+						pos.y >= 0 &&
+						pos.y < this.bounds.height
+					) {
+						// Display room index in the copied map.
+						const displayMapLeft = displayMap[pos.y]!;
+						displayMapLeft[pos.x] = room.index
+							.toString()
+							.padEnd(2, " ");
+					}
+				});
+			}
+		} else {
+			// If withIndex is false, just use the original map.
+			displayMap = this.map;
+		}
+
+		if (withColour) {
+			// Create a copy of the map to display room indices without modifying the original map.
+			displayMap = this.map.map((row) => [...row]);
+			displayMap = displayMap.map((row) => row.map((tile) => tile + " "));
+
+			for (const room of this.rooms) {
+				room.getTiles().forEach((pos) => {
+					// Check if the position is within the map bounds.
+					if (
+						pos.x >= 0 &&
+						pos.x < this.bounds.width &&
+						pos.y >= 0 &&
+						pos.y < this.bounds.height
+					) {
+						// Display room index in the copied map.
+						const displayMapLeft = displayMap[pos.y]!;
+						displayMapLeft[pos.x] = room.colour;
+					}
+				});
+			}
+		} else {
+			// If withIndex is false, just use the original map.
+			displayMap = this.map;
+		}
+
+		for (let y = 0; y < this.bounds.height; y++) {
+			for (let x = 0; x < this.bounds.width; x++) {
+				const tileRow = displayMap[y]!;
+				const tile = tileRow[x];
+				ctx.fillStyle = tile === this.tiles.wall ? "#000" : "#fff";
+				ctx.fillRect(
+					x * tileWidth,
+					y * tileHeight,
+					tileWidth,
+					tileHeight
+				);
+			}
+		}
+
+		return canvas;
 	}
 
 	#_addRoom(roomTries: number, extraRoomSize: number, startIndex: number) {
