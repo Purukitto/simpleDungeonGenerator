@@ -300,7 +300,6 @@ export default class Dungeon {
 
 	#_connectUnconnectedRooms() {
 		const allRooms = Array.from(this.rooms);
-
 		const room = allRooms.pop()!;
 
 		while (allRooms.length > 0) {
@@ -308,7 +307,6 @@ export default class Dungeon {
 
 			while (toCheckLength > 0) {
 				const otherRoom = allRooms[toCheckLength - 1]!;
-
 				if (this.#_areRoomsConnected(room, otherRoom)) {
 					allRooms.splice(toCheckLength - 1, 1);
 				}
@@ -318,17 +316,24 @@ export default class Dungeon {
 
 			if (allRooms.length === 0) break;
 
-			const closestRoom = allRooms.reduce((prev, curr) => {
-				if (room.distanceTo(curr) < room.distanceTo(prev)) return curr;
-				return prev;
-			});
+			const roomToConnect = allRooms.pop()!;
+
+			const closestRoom = Array.from(this.rooms)
+				.filter((r) => r.index !== roomToConnect.index)
+				.reduce((prev, curr) => {
+					if (
+						roomToConnect.distanceTo(curr) <
+						roomToConnect.distanceTo(prev)
+					)
+						return curr;
+					return prev;
+				});
 
 			if (closestRoom) {
-				this.#_connectRooms(room, closestRoom);
-
-				allRooms.splice(allRooms.indexOf(closestRoom), 1);
+				this.#_connectRooms(roomToConnect, closestRoom);
 			} else {
 				console.log("Could not connect room.", room.index);
+				allRooms.unshift(roomToConnect);
 				throw new Error(
 					`Could not connect room ${room.index} with any other room.`
 				);
@@ -336,14 +341,15 @@ export default class Dungeon {
 		}
 	}
 
+	// Bresenham's line algorithm: modified to avoid diagonal lines.
 	#_connectRooms(room1: Room, room2: Room) {
-		// Bresenham's line algorithm: modified to avoid diagonal lines.
 		const center1 = room1.getCenter();
 		const center2 = room2.getCenter();
 		let startX = center1.x;
 		let startY = center1.y;
 		let endX = center2.x;
 		let endY = center2.y;
+
 		// Check relative positions and adjust connection direction
 		if (startX > endX) {
 			[startX, endX] = [endX, startX];
@@ -351,14 +357,20 @@ export default class Dungeon {
 		if (startY > endY) {
 			[startY, endY] = [endY, startY];
 		}
-		// Connect horizontally first, then vertically
-		for (let x = startX; x <= endX; x++) {
-			if (this.#_getTile({ x, y: startY }) === this.tiles.wall) {
+
+		// Calculate the differences in coordinates
+		const dx = Math.abs(endX - startX);
+		const dy = Math.abs(endY - startY);
+
+		// Connect horizontally or vertically based on the shortest path
+		if (dx > dy) {
+			// Connect horizontally first on the visualization map
+			for (let x = startX; x <= endX; x++) {
 				this.#_carve({ x, y: startY }, this.tiles.path);
 			}
-		}
-		for (let y = startY; y <= endY; y++) {
-			if (this.#_getTile({ x: endX, y }) === this.tiles.wall) {
+		} else {
+			// Connect vertically on the visualization map
+			for (let y = startY; y <= endY; y++) {
 				this.#_carve({ x: endX, y }, this.tiles.path);
 			}
 		}

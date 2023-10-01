@@ -33,8 +33,8 @@ export default class Room {
 
 	getCenter() {
 		const center = {
-			x: this.x + this.width / 2,
-			y: this.y + this.height / 2,
+			x: Math.floor(this.x + this.width / 2),
+			y: Math.floor(this.y + this.height / 2),
 		};
 		return center;
 	}
@@ -57,13 +57,6 @@ export default class Room {
 		}
 
 		return tiles;
-	}
-
-	getRandomPosition() {
-		// Generate a random position within the bounds of the room.
-		const randomX = Math.floor(Math.random() * this.width + this.x);
-		const randomY = Math.floor(Math.random() * this.height + this.y);
-		return { x: randomX, y: randomY };
 	}
 
 	containsPosition(position: { x: number; y: number }) {
