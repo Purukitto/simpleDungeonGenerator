@@ -33,8 +33,8 @@ export default class Room {
 
 	getCenter() {
 		const center = {
-			x: this.x + this.width / 2,
-			y: this.y + this.height / 2,
+			x: Math.floor(this.x + this.width / 2),
+			y: Math.floor(this.y + this.height / 2),
 		};
 		return center;
 	}
