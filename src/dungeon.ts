@@ -131,7 +131,7 @@ export default class Dungeon {
 		let roomIndex = startIndex;
 
 		for (let i = 0; i < roomTries; i++) {
-			// TODO: This isn't very flexible or tunable. Do something better here.
+			// TODO: Revisit this logic
 			const size = Math.max(
 				2,
 				Math.floor(this.#rng() * (1 + 2 * extraRoomSize) + 1) +
@@ -235,7 +235,7 @@ export default class Dungeon {
 				let dir: string;
 				if (
 					unmadeCells.includes(lastDir) &&
-					Math.floor(this.#rng() * 101) > windingPercent
+					Math.floor(this.#rng() * 101) > windingPercent //TODO: Revisit this logic, not a big influence
 				) {
 					dir = lastDir;
 				} else {

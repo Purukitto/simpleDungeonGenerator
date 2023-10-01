@@ -17,7 +17,7 @@ const defaultOptions = {
 	maxW: 50,
 	seed: "purukitto",
 	type: "Base",
-	roomTries: 100,
+	roomTries: 50,
 	extraRoomSize: 0,
 	windingPercent: 0,
 	tiles: defaultTiles,
@@ -38,29 +38,58 @@ const defaultOptions = {
 function simpleDungeon(options?: GeneratorOptions) {
 	if (!options) options = defaultOptions;
 	// Options for the dungeon generator
+
 	const maxH = options.maxH; // Max height
+	if (maxH < 5) throw new Error("maxH must be greater than 5");
+
 	const maxW = options.maxW; // Max width
-	const seed = options.seed ? options.seed : defaultOptions.seed; // Seed
-	const type = options.type ? options.type : defaultOptions.type; // Type of dungeon //TODO: Implement dungeon types
-	const roomTries = options.roomTries
-		? options.roomTries
-		: defaultOptions.roomTries; // Number of times to try to place a room
-	const extraRoomSize = options.extraRoomSize
-		? options.extraRoomSize
-		: defaultOptions.extraRoomSize; // Allows rooms to be larger
+	if (maxW < 5) throw new Error("maxW must be greater than 5");
+
+	const seed =
+		typeof options.seed !== "undefined"
+			? options.seed.toString()
+			: defaultOptions.seed; // Seed
+
+	const type =
+		typeof options.type !== "undefined"
+			? options.type
+			: defaultOptions.type; // Type of dungeon //TODO: Implement dungeon types
+
+	const roomTries =
+		typeof options.roomTries !== "undefined"
+			? options.roomTries
+			: defaultOptions.roomTries; // Number of times to try to place a room
+	if (roomTries <= 0) throw new Error("roomTries must be greater than 0");
+
+	const extraRoomSize =
+		typeof options.extraRoomSize !== "undefined"
+			? options.extraRoomSize
+			: defaultOptions.extraRoomSize; // Allows rooms to be larger
 	if (extraRoomSize < 0)
 		throw new Error("extraRoomSize must be greater than or equal to 0");
-	const windingPercent = options.windingPercent
-		? options.windingPercent
-		: defaultOptions.windingPercent; // Chance to add winding paths between rooms
+	if (extraRoomSize > Math.floor(Math.min(maxH, maxW) / 5))
+		console.warn(
+			`extraRoomSize is too large for current dungeon, suggested setting this to under ${Math.floor(
+				Math.min(maxH, maxW) / 5
+			)}`
+		);
+
+	const windingPercent =
+		typeof options.windingPercent !== "undefined"
+			? options.windingPercent
+			: defaultOptions.windingPercent; // Chance to add winding paths between rooms
 	if (windingPercent < 0 || windingPercent > 100)
 		throw new Error("windingPercent must be between 0 and 100");
-	const tiles = options.tiles
-		? { ...defaultTiles, ...options.tiles }
-		: defaultTiles; // Tiles to use
-	const startIndex = options.startIndex
-		? options.startIndex
-		: defaultOptions.startIndex; // Index to start at
+
+	const tiles =
+		typeof options.tiles !== "undefined"
+			? { ...defaultTiles, ...options.tiles }
+			: defaultTiles; // Tiles to use
+
+	const startIndex =
+		typeof options.startIndex !== "undefined"
+			? options.startIndex
+			: defaultOptions.startIndex; // Index to start at
 
 	// Create and return dungeon object
 	return new Dungeon(
