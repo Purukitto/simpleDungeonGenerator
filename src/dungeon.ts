@@ -300,40 +300,21 @@ export default class Dungeon {
 
 	#_connectUnconnectedRooms() {
 		const allRooms = Array.from(this.rooms);
-		console.log(`Before connecting rooms:`);
-		this.drawToConsole(true);
-		console.log("\n.");
-
 		const room = allRooms.pop()!;
-
-		console.log(`Connecting room ${room.index} to other rooms.`);
 
 		while (allRooms.length > 0) {
 			let toCheckLength = allRooms.length;
-			console.log(`Rooms left to check: ${toCheckLength}`);
 
 			while (toCheckLength > 0) {
 				const otherRoom = allRooms[toCheckLength - 1]!;
 				if (this.#_areRoomsConnected(room, otherRoom)) {
 					allRooms.splice(toCheckLength - 1, 1);
-					console.log(
-						`Room ${room.index} is already connected to room ${otherRoom.index}.`
-					);
-				} else {
-					console.log(
-						`Room ${room.index} is not connected to room ${otherRoom.index}.`
-					);
 				}
 
 				toCheckLength--;
 			}
 
 			if (allRooms.length === 0) break;
-
-			// const closestRoom = allRooms.reduce((prev, curr) => {
-			// 	if (room.distanceTo(curr) < room.distanceTo(prev)) return curr;
-			// 	return prev;
-			// });
 
 			const roomToConnect = allRooms.pop()!;
 
@@ -348,16 +329,8 @@ export default class Dungeon {
 					return prev;
 				});
 
-			console.log(
-				`Closest room to ${roomToConnect.index} is ${closestRoom.index}.`
-			);
-
 			if (closestRoom) {
 				this.#_connectRooms(roomToConnect, closestRoom);
-
-				console.log(
-					`Connected room ${roomToConnect.index} to room ${closestRoom.index}.`
-				);
 			} else {
 				console.log("Could not connect room.", room.index);
 				allRooms.unshift(roomToConnect);
@@ -385,29 +358,21 @@ export default class Dungeon {
 			[startY, endY] = [endY, startY];
 		}
 
-		// Create a separate visualization map for progression
-		const visualizationMap: string[][] = this.map.map((row) => [...row]);
+		// Calculate the differences in coordinates
+		const dx = Math.abs(endX - startX);
+		const dy = Math.abs(endY - startY);
 
-		// Connect horizontally first on the visualization map
-		for (let x = startX; x <= endX; x++) {
-			visualizationMap[startY][x] = " @";
-			console.log(
-				"\n",
-				visualizationMap.map((row) => row.join(" ")).join("\n"),
-				"\n"
-			);
-			this.#_carve({ x, y: startY }, this.tiles.path);
-		}
-
-		// Connect vertically on the visualization map
-		for (let y = startY; y <= endY; y++) {
-			visualizationMap[y][endX] = " @";
-			console.log(
-				"\n",
-				visualizationMap.map((row) => row.join(" ")).join("\n"),
-				"\n"
-			);
-			this.#_carve({ x: endX, y }, this.tiles.path);
+		// Connect horizontally or vertically based on the shortest path
+		if (dx > dy) {
+			// Connect horizontally first on the visualization map
+			for (let x = startX; x <= endX; x++) {
+				this.#_carve({ x, y: startY }, this.tiles.path);
+			}
+		} else {
+			// Connect vertically on the visualization map
+			for (let y = startY; y <= endY; y++) {
+				this.#_carve({ x: endX, y }, this.tiles.path);
+			}
 		}
 	}
 
