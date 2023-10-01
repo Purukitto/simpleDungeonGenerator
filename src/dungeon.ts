@@ -52,7 +52,7 @@ type MapTile = string; // Define a type for map tiles.
 
 export default class Dungeon {
 	map: string[][];
-	rng: PRNG;
+	#rng: PRNG;
 	tiles: GeneratorOptions["tiles"];
 	bounds: { height: number; width: number };
 	rooms: Set<Room>;
@@ -67,7 +67,7 @@ export default class Dungeon {
 		tiles: GeneratorOptions["tiles"],
 		startIndex: number
 	) {
-		this.rng = seedrandom(seed);
+		this.#rng = seedrandom(seed);
 		this.bounds = { height: maxH, width: maxW };
 		this.tiles = tiles;
 		this.map = Array.from({ length: maxH }, () => {
@@ -133,26 +133,26 @@ export default class Dungeon {
 			// TODO: This isn't very flexible or tunable. Do something better here.
 			const size = Math.max(
 				2,
-				Math.floor(this.rng() * (1 + 2 * extraRoomSize) + 1) +
+				Math.floor(this.#rng() * (1 + 2 * extraRoomSize) + 1) +
 					extraRoomSize
 			);
-			const rectangularity = Math.floor(this.rng() * (1 + size / 2));
+			const rectangularity = Math.floor(this.#rng() * (1 + size / 2));
 
 			let width = size;
 			let height = size;
 
-			if (this.rng() < 0.5) {
+			if (this.#rng() < 0.5) {
 				width += rectangularity;
 			} else {
 				height += rectangularity;
 			}
 
 			const x = Math.floor(
-				this.rng() * (this.bounds.width - width - 2) + 2
+				this.#rng() * (this.bounds.width - width - 2) + 2
 			);
 
 			const y = Math.floor(
-				this.rng() * (this.bounds.height - height - 2) + 2
+				this.#rng() * (this.bounds.height - height - 2) + 2
 			);
 
 			const room = new Room(
@@ -161,7 +161,7 @@ export default class Dungeon {
 				width,
 				height,
 				roomIndex,
-				getRandomHexColor(this.rng)
+				getRandomHexColor(this.#rng)
 			);
 
 			var overlaps = false;
@@ -234,12 +234,12 @@ export default class Dungeon {
 				let dir: string;
 				if (
 					unmadeCells.includes(lastDir) &&
-					Math.floor(this.rng() * 101) > windingPercent
+					Math.floor(this.#rng() * 101) > windingPercent
 				) {
 					dir = lastDir;
 				} else {
 					dir = unmadeCells.splice(
-						Math.floor(this.rng() * unmadeCells.length),
+						Math.floor(this.#rng() * unmadeCells.length),
 						1
 					)[0]!;
 				}
