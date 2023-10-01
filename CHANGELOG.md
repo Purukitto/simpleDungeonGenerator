@@ -1,5 +1,14 @@
 # simpledungeongenerator
 
+## 0.6.4
+
+### Patch Changes
+
+- 3700d86: Minor changes
+
+  - Throw error for invalid inputs instead of defaulting to default values
+  - Make rng() property private
+
 ## 0.6.3
 
 ### Patch Changes
