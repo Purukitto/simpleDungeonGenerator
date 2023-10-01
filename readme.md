@@ -41,7 +41,7 @@ const dungeon = new DungeonGenerator({
 	minRoomSize: 5,
 	maxRoomSize: 10,
 	maxRooms: 10,
-	seed: 123456789,
+	seed: "MyProjectName",
 });
 
 dungeon.drawToConsole();
@@ -58,7 +58,7 @@ const dungeon = new DungeonGenerator({
 	minRoomSize: 5,
 	maxRoomSize: 10,
 	maxRooms: 10,
-	seed: 123456789,
+	seed: "MyProjectName",
 });
 
 dungeon.drawToConsole();
