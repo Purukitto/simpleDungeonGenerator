@@ -59,13 +59,6 @@ export default class Room {
 		return tiles;
 	}
 
-	getRandomPosition() {
-		// Generate a random position within the bounds of the room.
-		const randomX = Math.floor(Math.random() * this.width + this.x);
-		const randomY = Math.floor(Math.random() * this.height + this.y);
-		return { x: randomX, y: randomY };
-	}
-
 	containsPosition(position: { x: number; y: number }) {
 		// Check if the given position is inside the room's bounds.
 		return (
