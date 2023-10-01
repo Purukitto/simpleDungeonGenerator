@@ -330,25 +330,37 @@ export default class Dungeon {
 
 			if (allRooms.length === 0) break;
 
-			const closestRoom = allRooms.reduce((prev, curr) => {
-				if (room.distanceTo(curr) < room.distanceTo(prev)) return curr;
-				return prev;
-			});
+			// const closestRoom = allRooms.reduce((prev, curr) => {
+			// 	if (room.distanceTo(curr) < room.distanceTo(prev)) return curr;
+			// 	return prev;
+			// });
+
+			const roomToConnect = allRooms.pop()!;
+
+			const closestRoom = Array.from(this.rooms)
+				.filter((r) => r.index !== roomToConnect.index)
+				.reduce((prev, curr) => {
+					if (
+						roomToConnect.distanceTo(curr) <
+						roomToConnect.distanceTo(prev)
+					)
+						return curr;
+					return prev;
+				});
 
 			console.log(
-				`Closest room to ${room.index} is ${closestRoom.index}.`
+				`Closest room to ${roomToConnect.index} is ${closestRoom.index}.`
 			);
 
 			if (closestRoom) {
-				this.#_connectRooms(room, closestRoom);
+				this.#_connectRooms(roomToConnect, closestRoom);
 
 				console.log(
-					`Connected room ${room.index} to room ${closestRoom.index}.`
+					`Connected room ${roomToConnect.index} to room ${closestRoom.index}.`
 				);
-
-				allRooms.splice(allRooms.indexOf(closestRoom), 1);
 			} else {
 				console.log("Could not connect room.", room.index);
+				allRooms.unshift(roomToConnect);
 				throw new Error(
 					`Could not connect room ${room.index} with any other room.`
 				);
@@ -356,14 +368,15 @@ export default class Dungeon {
 		}
 	}
 
+	// Bresenham's line algorithm: modified to avoid diagonal lines.
 	#_connectRooms(room1: Room, room2: Room) {
-		// Bresenham's line algorithm: modified to avoid diagonal lines.
 		const center1 = room1.getCenter();
 		const center2 = room2.getCenter();
 		let startX = center1.x;
 		let startY = center1.y;
 		let endX = center2.x;
 		let endY = center2.y;
+
 		// Check relative positions and adjust connection direction
 		if (startX > endX) {
 			[startX, endX] = [endX, startX];
@@ -371,20 +384,30 @@ export default class Dungeon {
 		if (startY > endY) {
 			[startY, endY] = [endY, startY];
 		}
-		// Connect horizontally first, then vertically
+
+		// Create a separate visualization map for progression
+		const visualizationMap: string[][] = this.map.map((row) => [...row]);
+
+		// Connect horizontally first on the visualization map
 		for (let x = startX; x <= endX; x++) {
-			if (this.#_getTile({ x, y: startY }) === this.tiles.wall) {
-				this.#_carve({ x, y: startY }, " @");
-				this.drawToConsole(true);
-				this.#_carve({ x, y: startY }, this.tiles.path);
-			}
+			visualizationMap[startY][x] = " @";
+			console.log(
+				"\n",
+				visualizationMap.map((row) => row.join(" ")).join("\n"),
+				"\n"
+			);
+			this.#_carve({ x, y: startY }, this.tiles.path);
 		}
+
+		// Connect vertically on the visualization map
 		for (let y = startY; y <= endY; y++) {
-			if (this.#_getTile({ x: endX, y }) === this.tiles.wall) {
-				this.#_carve({ x: endX, y }, " @");
-				this.drawToConsole(true);
-				this.#_carve({ x: endX, y }, this.tiles.path);
-			}
+			visualizationMap[y][endX] = " @";
+			console.log(
+				"\n",
+				visualizationMap.map((row) => row.join(" ")).join("\n"),
+				"\n"
+			);
+			this.#_carve({ x: endX, y }, this.tiles.path);
 		}
 	}
 
