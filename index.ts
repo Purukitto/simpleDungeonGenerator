@@ -46,15 +46,15 @@ function simpleDungeon(options?: GeneratorOptions) {
 		? options.roomTries
 		: defaultOptions.roomTries; // Number of times to try to place a room
 	const extraRoomSize = options.extraRoomSize
-		? options.extraRoomSize >= defaultOptions.extraRoomSize // TODO: Throw error instead of defaulting to 0
-			? options.extraRoomSize
-			: defaultOptions.extraRoomSize
+		? options.extraRoomSize
 		: defaultOptions.extraRoomSize; // Allows rooms to be larger
+	if (extraRoomSize < 0)
+		throw new Error("extraRoomSize must be greater than or equal to 0");
 	const windingPercent = options.windingPercent
-		? options.windingPercent >= defaultOptions.windingPercent // TODO: Throw error instead of defaulting to 0
-			? options.windingPercent
-			: defaultOptions.windingPercent
+		? options.windingPercent
 		: defaultOptions.windingPercent; // Chance to add winding paths between rooms
+	if (windingPercent < 0 || windingPercent > 100)
+		throw new Error("windingPercent must be between 0 and 100");
 	const tiles = options.tiles
 		? { ...defaultTiles, ...options.tiles }
 		: defaultTiles; // Tiles to use
