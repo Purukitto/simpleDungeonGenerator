@@ -41,7 +41,7 @@ function simpleDungeon(options?: GeneratorOptions) {
 	const maxH = options.maxH; // Max height
 	const maxW = options.maxW; // Max width
 	const seed = options.seed ? options.seed : defaultOptions.seed; // Seed
-	const type = options.type ? options.type : defaultOptions.type; // Type of dungeon //TODO: Implement types
+	const type = options.type ? options.type : defaultOptions.type; // Type of dungeon //TODO: Implement dungeon types
 	const roomTries = options.roomTries
 		? options.roomTries
 		: defaultOptions.roomTries; // Number of times to try to place a room
