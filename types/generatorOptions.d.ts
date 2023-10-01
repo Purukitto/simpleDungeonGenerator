@@ -1,3 +1,16 @@
+/**
+ * @typedef {Object} GeneratorOptions
+ * @property {string} seed
+ * @property {number} maxH
+ * @property {number} maxW
+ * @property {string} type
+ * @property {number} roomTries
+ * @property {number} extraRoomSize
+ * @property {number} windingPercent
+ * @property {Object} tiles
+ * @property {number} startIndex
+ */
+
 type GeneratorOptions = {
 	seed: string;
 	maxH: number;

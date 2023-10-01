@@ -1,3 +1,49 @@
+/**
+ * Dungeon generator options.
+ *
+ * @class Dungeon
+ * @property {number} maxH Maximum height of the dungeon.
+ * @property {number} maxW Maximum width of the dungeon.
+ * @property {string} seed Seed for the dungeon generator.
+ * @property {number} roomTries Number of times to try to generate a room.
+ * @property {number} extraRoomSize Extra size to add to the room.
+ * @property {number} windingPercent Percent chance to continue in the same direction.
+ * @property {object} tiles Tiles to use for the dungeon.
+ * @property {number} startIndex Index to start room numbering from.
+ *
+ * @constructor
+ * @param {number} maxH Maximum height of the dungeon.
+ * @param {number} maxW Maximum width of the dungeon.
+ * @param {string} seed Seed for the dungeon generator.
+ * @param {number} roomTries Number of times to try to generate a room.
+ * @param {number} extraRoomSize Extra size to add to the room.
+ * @param {number} windingPercent Percent chance to continue in the same direction.
+ * @param {object} tiles Tiles to use for the dungeon.
+ * @param {number} startIndex Index to start room numbering from.
+ *
+ * @returns Dungeon generator options.
+ *
+ * @example
+ * const options = {
+ * 	maxH: 40,
+ * 	maxW: 40,
+ * 	seed: "seed",
+ * 	roomTries: 1000,
+ * 	extraRoomSize: 2,
+ * 	windingPercent: 0,
+ * 	tiles: {
+ * 		wall: "#",
+ * 		floor: ".",
+ * 		path: " ",
+ * 	},
+ * 	startIndex: 1,
+ * };
+ *
+ * const dungeon = new Dungeon(options);
+ *
+ * dungeon.drawToConsole(true);
+ */
+
 import seedrandom, { PRNG } from "seedrandom";
 import Room from "./room";
 import getRandomHexColor from "./randomHexColour";

@@ -1,3 +1,14 @@
+/**
+ * Returns a random hex colour string
+ *
+ * @param {PRNG} rng - A seeded PRNG
+ *
+ * @returns {string} A random hex colour string
+ *
+ * @example
+ * getRandomHexColor(rng); // => "#ff0000"
+ */
+
 import { PRNG } from "seedrandom";
 
 export default function getRandomHexColor(rng: PRNG) {

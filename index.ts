@@ -25,13 +25,16 @@ const defaultOptions = {
 };
 
 /**
+ * @function simpleDungeon
+ * @param {GeneratorOptions} options
  *
- * @param seed
- * @param maxH
- * @param maxW
+ * @returns {Dungeon}
+ * @description
+ * Generates a simple dungeon
  *
  * Based on https://journal.stuffwithstuff.com/2014/12/21/rooms-and-mazes/
  */
+
 function simpleDungeon(options?: GeneratorOptions) {
 	if (!options) options = defaultOptions;
 	// Options for the dungeon generator

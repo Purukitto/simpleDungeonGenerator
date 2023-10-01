@@ -1,3 +1,29 @@
+/**
+ * Room class.
+ * Represents a room in the dungeon.
+ *
+ * @class Room
+ * @property {number} x - The x coordinate of the room's top-left corner.
+ * @property {number} y - The y coordinate of the room's top-left corner.
+ * @property {number} width - The width of the room.
+ * @property {number} height - The height of the room.
+ * @property {number} index - The index of the room in the dungeon's rooms array.
+ * @property {string} color - The color of the room.
+ *
+ * @constructor
+ * @param {number} x - The x coordinate of the room's top-left corner.
+ * @param {number} y - The y coordinate of the room's top-left corner.
+ * @param {number} width - The width of the room.
+ * @param {number} height - The height of the room.
+ * @param {number} index - The index of the room in the dungeon's rooms array.
+ * @param {string} color - The color of the room.
+ * @returns {Room} A new Room object.
+ *
+ * @example
+ * const room = new Room(0, 0, 10, 10, 0, "#ff0000");
+ * console.log(room);
+ */
+
 export default class Room {
 	x: number;
 	y: number;
