@@ -48,15 +48,36 @@ export default class Dungeon {
 	}
 
 	drawToConsole(withIndex = false) {
+		let displayMap: string[][];
+
 		if (withIndex) {
+			// Create a copy of the map to display room indices without modifying the original map.
+			displayMap = this.map.map((row) => [...row]);
+
 			for (const room of this.rooms) {
-				room.getTiles().map((pos) => {
-					this.#_carve(pos, room.index.toString());
+				room.getTiles().forEach((pos) => {
+					// Check if the position is within the map bounds.
+					if (
+						pos.x >= 0 &&
+						pos.x < this.bounds.width &&
+						pos.y >= 0 &&
+						pos.y < this.bounds.height
+					) {
+						// Display room index in the copied map.
+						const displayMapLeft = displayMap[pos.y]!;
+						displayMapLeft[pos.x] = room.index
+							.toString()
+							.padStart(2, "0");
+					}
 				});
 			}
+		} else {
+			// If withIndex is false, just use the original map.
+			displayMap = this.map;
 		}
 
-		console.log(this.map.map((row) => row.join(" ")).join("\n"));
+		// Print the modified or original map to the console.
+		console.log(displayMap.map((row) => row.join(" ")).join("\n"));
 	}
 
 	#_addRoom(roomTries: number, extraRoomSize: number, startIndex: number) {
