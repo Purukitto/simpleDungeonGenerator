@@ -364,14 +364,14 @@ export default class Dungeon {
 
 		// Connect horizontally or vertically based on the shortest path
 		if (dx > dy) {
-			// Connect horizontally first on the visualization map
 			for (let x = startX; x <= endX; x++) {
-				this.#_carve({ x, y: startY }, this.tiles.path);
+				if (this.#_getTile({ x, y: startY }) === this.tiles.wall)
+					this.#_carve({ x, y: startY }, this.tiles.path);
 			}
 		} else {
-			// Connect vertically on the visualization map
 			for (let y = startY; y <= endY; y++) {
-				this.#_carve({ x: endX, y }, this.tiles.path);
+				if (this.#_getTile({ x: endX, y }) === this.tiles.wall)
+					this.#_carve({ x: endX, y }, this.tiles.path);
 			}
 		}
 	}
