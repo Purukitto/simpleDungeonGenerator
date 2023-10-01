@@ -300,17 +300,29 @@ export default class Dungeon {
 
 	#_connectUnconnectedRooms() {
 		const allRooms = Array.from(this.rooms);
+		console.log(`Before connecting rooms:`);
+		this.drawToConsole(true);
+		console.log("\n.");
 
 		const room = allRooms.pop()!;
 
+		console.log(`Connecting room ${room.index} to other rooms.`);
+
 		while (allRooms.length > 0) {
 			let toCheckLength = allRooms.length;
+			console.log(`Rooms left to check: ${toCheckLength}`);
 
 			while (toCheckLength > 0) {
 				const otherRoom = allRooms[toCheckLength - 1]!;
-
 				if (this.#_areRoomsConnected(room, otherRoom)) {
 					allRooms.splice(toCheckLength - 1, 1);
+					console.log(
+						`Room ${room.index} is already connected to room ${otherRoom.index}.`
+					);
+				} else {
+					console.log(
+						`Room ${room.index} is not connected to room ${otherRoom.index}.`
+					);
 				}
 
 				toCheckLength--;
@@ -323,8 +335,16 @@ export default class Dungeon {
 				return prev;
 			});
 
+			console.log(
+				`Closest room to ${room.index} is ${closestRoom.index}.`
+			);
+
 			if (closestRoom) {
 				this.#_connectRooms(room, closestRoom);
+
+				console.log(
+					`Connected room ${room.index} to room ${closestRoom.index}.`
+				);
 
 				allRooms.splice(allRooms.indexOf(closestRoom), 1);
 			} else {
@@ -354,11 +374,15 @@ export default class Dungeon {
 		// Connect horizontally first, then vertically
 		for (let x = startX; x <= endX; x++) {
 			if (this.#_getTile({ x, y: startY }) === this.tiles.wall) {
+				this.#_carve({ x, y: startY }, " @");
+				this.drawToConsole(true);
 				this.#_carve({ x, y: startY }, this.tiles.path);
 			}
 		}
 		for (let y = startY; y <= endY; y++) {
 			if (this.#_getTile({ x: endX, y }) === this.tiles.wall) {
+				this.#_carve({ x: endX, y }, " @");
+				this.drawToConsole(true);
 				this.#_carve({ x: endX, y }, this.tiles.path);
 			}
 		}
