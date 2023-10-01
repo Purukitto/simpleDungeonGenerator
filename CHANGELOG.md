@@ -1,5 +1,11 @@
 # simpledungeongenerator
 
+## 0.6.3
+
+### Patch Changes
+
+- 6826b7b: Fix room connection eating into rooms
+
 ## 0.6.2
 
 ### Patch Changes
