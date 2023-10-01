@@ -99,6 +99,7 @@ export default class Dungeon {
 		if (withIndex) {
 			// Create a copy of the map to display room indices without modifying the original map.
 			displayMap = this.map.map((row) => [...row]);
+			displayMap = displayMap.map((row) => row.map((tile) => tile + " "));
 
 			for (const room of this.rooms) {
 				room.getTiles().forEach((pos) => {
@@ -113,7 +114,7 @@ export default class Dungeon {
 						const displayMapLeft = displayMap[pos.y]!;
 						displayMapLeft[pos.x] = room.index
 							.toString()
-							.padStart(2, "0");
+							.padEnd(2, " ");
 					}
 				});
 			}
