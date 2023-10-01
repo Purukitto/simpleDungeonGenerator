@@ -1,5 +1,11 @@
 # simpledungeongenerator
 
+## 0.6.1
+
+### Patch Changes
+
+- 831f6f1: Fix print with index logic in drawToConsole function
+
 ## 0.6.0
 
 ### Minor Changes
