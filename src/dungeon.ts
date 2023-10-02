@@ -36,7 +36,7 @@
  * 		floor: ".",
  * 		path: " ",
  * 	},
- * 	startIndex: 1,
+ * 	startIndex: 0,
  * };
  *
  * const dungeon = new Dungeon(options);
@@ -46,7 +46,8 @@
 
 import seedrandom, { PRNG } from "seedrandom";
 import Room from "./room";
-import getRandomHexColor from "./randomHexColour";
+import getRandomHexColour from "./randomHexColour";
+import getContrastColour from "./contrastColour";
 
 type MapTile = string; // Define a type for map tiles.
 
@@ -99,6 +100,7 @@ export default class Dungeon {
 		if (withIndex) {
 			// Create a copy of the map to display room indices without modifying the original map.
 			displayMap = this.map.map((row) => [...row]);
+			displayMap = displayMap.map((row) => row.map((tile) => tile + " "));
 
 			for (const room of this.rooms) {
 				room.getTiles().forEach((pos) => {
@@ -113,7 +115,7 @@ export default class Dungeon {
 						const displayMapLeft = displayMap[pos.y]!;
 						displayMapLeft[pos.x] = room.index
 							.toString()
-							.padStart(2, "0");
+							.padEnd(2, " ");
 					}
 				});
 			}
@@ -126,11 +128,99 @@ export default class Dungeon {
 		console.log(displayMap.map((row) => row.join(" ")).join("\n"));
 	}
 
+	drawToSVG({ withIndex = false, withColour = false }) {
+		const svgNS = "http://www.w3.org/2000/svg";
+		const svg = document.createElementNS(svgNS, "svg");
+		svg.setAttribute("width", (this.bounds.width * 10).toString());
+		svg.setAttribute("height", (this.bounds.height * 10).toString());
+
+		// Draw the base map to the SVG.
+		for (let y = 0; y < this.bounds.height; y++) {
+			for (let x = 0; x < this.bounds.width; x++) {
+				const mapLeft = this.map[y]!;
+				const tile = mapLeft[x];
+				const rect = document.createElementNS(svgNS, "rect");
+				rect.setAttribute("x", (x * 10).toString());
+				rect.setAttribute("y", (y * 10).toString());
+				rect.setAttribute("width", "10");
+				rect.setAttribute("height", "10");
+				switch (tile) {
+					case this.tiles.path:
+						rect.setAttribute("fill", "#000000");
+						break;
+					case this.tiles.floor:
+						rect.setAttribute("fill", "#ff0000");
+						break;
+					default:
+						rect.setAttribute("fill", "#ffffff");
+						break;
+				}
+				svg.appendChild(rect);
+			}
+		}
+
+		// Draw room colours.
+		if (withColour) {
+			for (const room of this.rooms) {
+				room.getTiles().forEach((pos) => {
+					const mapLeft = this.map[pos.y]!;
+					mapLeft[pos.x] = room.index.toString().padEnd(2, " ");
+
+					const rect = document.createElementNS(svgNS, "rect");
+					rect.setAttribute("x", (pos.x * 10).toString());
+					rect.setAttribute("y", (pos.y * 10).toString());
+					rect.setAttribute("width", "10");
+					rect.setAttribute("height", "10");
+					rect.setAttribute("fill", room.colour);
+					svg.appendChild(rect);
+				});
+			}
+		}
+
+		// Draw room indices
+		if (withIndex) {
+			for (const room of this.rooms) {
+				let roomCenterX = 0;
+				let roomCenterY = 0;
+				let totalTiles = 0;
+
+				room.getTiles().forEach((pos) => {
+					roomCenterX += pos.x;
+					roomCenterY += pos.y;
+					totalTiles++;
+				});
+
+				// Calculate the center position. If the totalTiles is even, adjust by +0.5 to center it.
+				const centerX =
+					Math.floor(roomCenterX / totalTiles) +
+					(totalTiles % 2 === 0 ? +0.5 : 0);
+				const centerY =
+					Math.floor(roomCenterY / totalTiles) +
+					(totalTiles % 2 === 0 ? +0.5 : 0);
+
+				const text = document.createElementNS(svgNS, "text");
+				text.setAttribute("font-family", "sans-serif");
+				text.setAttribute("x", (centerX * 10 + 5).toString());
+				text.setAttribute("y", (centerY * 10 + 5).toString());
+				if (withColour)
+					text.setAttribute("fill", getContrastColour(room.colour));
+				else text.setAttribute("fill", "#ffffff");
+				text.setAttribute("font-size", "10");
+				text.setAttribute("text-anchor", "middle");
+				text.setAttribute("dominant-baseline", "middle");
+				text.textContent = room.index.toString();
+				svg.appendChild(text);
+			}
+		}
+
+		return svg;
+	}
+
 	#_addRoom(roomTries: number, extraRoomSize: number, startIndex: number) {
 		let roomIndex = startIndex;
 
 		for (let i = 0; i < roomTries; i++) {
-			// TODO: This isn't very flexible or tunable. Do something better here.
+			// TODO: Revisit this logic
 			const size = Math.max(
 				2,
 				Math.floor(this.#rng() * (1 + 2 * extraRoomSize) + 1) +
@@ -161,7 +251,7 @@ export default class Dungeon {
 				width,
 				height,
 				roomIndex,
-				getRandomHexColor(this.#rng)
+				getRandomHexColour(this.#rng)
 			);
 
 			var overlaps = false;
@@ -234,7 +324,7 @@ export default class Dungeon {
 				let dir: string;
 				if (
 					unmadeCells.includes(lastDir) &&
-					Math.floor(this.#rng() * 101) > windingPercent
+					Math.floor(this.#rng() * 101) > windingPercent //TODO: Revisit this logic, not a big influence
 				) {
 					dir = lastDir;
 				} else {

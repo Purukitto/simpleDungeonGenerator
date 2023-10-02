@@ -8,7 +8,7 @@
  * @property {number} width - The width of the room.
  * @property {number} height - The height of the room.
  * @property {number} index - The index of the room in the dungeon's rooms array.
- * @property {string} color - The color of the room.
+ * @property {string} colour - The color of the room.
  *
  * @constructor
  * @param {number} x - The x coordinate of the room's top-left corner.
@@ -16,7 +16,7 @@
  * @param {number} width - The width of the room.
  * @param {number} height - The height of the room.
  * @param {number} index - The index of the room in the dungeon's rooms array.
- * @param {string} color - The color of the room.
+ * @param {string} colour - The color of the room.
  * @returns {Room} A new Room object.
  *
  * @example
@@ -30,7 +30,7 @@ export default class Room {
 	width: number;
 	height: number;
 	index: number;
-	color: string;
+	colour: string;
 
 	constructor(
 		x: number,
@@ -38,14 +38,14 @@ export default class Room {
 		width: number,
 		height: number,
 		index: number,
-		color: string
+		colour: string
 	) {
 		this.x = x;
 		this.y = y;
 		this.width = width;
 		this.height = height;
 		this.index = index;
-		this.color = color;
+		this.colour = colour;
 	}
 
 	overlap(room: Room) {
