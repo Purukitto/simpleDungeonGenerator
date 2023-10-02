@@ -3,14 +3,13 @@
 	"version": "0.7.1",
 	"license": "MIT",
 	"main": "dist/index.js",
-	"module": "dist/index.cjs",
+	"module": "dist/index.mjs",
 	"types": "dist/index.d.ts",
 	"scripts": {
-		"build": "tsup index.ts --format cjs,esm --dts",
+		"build": "tsup",
 		"release": "bun run build && changeset publish",
 		"lint": "tsc"
 	},
-	"type": "module",
 	"devDependencies": {
 		"@changesets/cli": "^2.26.2",
 		"@types/seedrandom": "^3.0.5",

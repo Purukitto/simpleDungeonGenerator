@@ -1,0 +1,5 @@
+---
+"simpledungeongenerator": patch
+---
+
+Fix
