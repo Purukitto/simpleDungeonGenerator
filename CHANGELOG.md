@@ -1,5 +1,11 @@
 # simpledungeongenerator
 
+## 0.7.2
+
+### Patch Changes
+
+- c34231c: Fix
+
 ## 0.7.1
 
 ### Patch Changes
