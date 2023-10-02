@@ -91,6 +91,7 @@ dungeon.drawToConsole();
 | Method          | Description                      |
 | --------------- | -------------------------------- |
 | drawToConsole() | Draws the dungeon to the console |
+| drawToSVG()     | Draws the dungeon to an SVG      |
 
 ## Contributing
 
