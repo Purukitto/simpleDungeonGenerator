@@ -170,4 +170,5 @@ dist
 
 # Own
 test/
+index.html
 .DS_Store
