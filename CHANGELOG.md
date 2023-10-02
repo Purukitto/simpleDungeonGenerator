@@ -1,5 +1,11 @@
 # simpledungeongenerator
 
+## 0.7.1
+
+### Patch Changes
+
+- 7152d86: Fix entry point for module
+
 ## 0.7.0
 
 ### Minor Changes
