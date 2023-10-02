@@ -133,67 +133,18 @@ export default class Dungeon {
 		canvas.height = this.bounds.height * 10;
 		const ctx = canvas.getContext("2d")!;
 
-		let displayMap: string[][];
+		// let displayMap = this.map.map((row) => row.slice()); // Create a copy if necessary
+
 		let tileWidth = 10;
 		let tileHeight = 10;
 
-		if (withIndex) {
-			// Create a copy of the map to display room indices without modifying the original map.
-			displayMap = this.map.map((row) => [...row]);
-			displayMap = displayMap.map((row) => row.map((tile) => tile + " "));
-
-			for (const room of this.rooms) {
-				room.getTiles().forEach((pos) => {
-					// Check if the position is within the map bounds.
-					if (
-						pos.x >= 0 &&
-						pos.x < this.bounds.width &&
-						pos.y >= 0 &&
-						pos.y < this.bounds.height
-					) {
-						// Display room index in the copied map.
-						const displayMapLeft = displayMap[pos.y]!;
-						displayMapLeft[pos.x] = room.index
-							.toString()
-							.padEnd(2, " ");
-					}
-				});
-			}
-		} else {
-			// If withIndex is false, just use the original map.
-			displayMap = this.map;
-		}
-
-		if (withColour) {
-			// Create a copy of the map to display room indices without modifying the original map.
-			displayMap = this.map.map((row) => [...row]);
-			displayMap = displayMap.map((row) => row.map((tile) => tile + " "));
-
-			for (const room of this.rooms) {
-				room.getTiles().forEach((pos) => {
-					// Check if the position is within the map bounds.
-					if (
-						pos.x >= 0 &&
-						pos.x < this.bounds.width &&
-						pos.y >= 0 &&
-						pos.y < this.bounds.height
-					) {
-						// Display room index in the copied map.
-						const displayMapLeft = displayMap[pos.y]!;
-						displayMapLeft[pos.x] = room.colour;
-					}
-				});
-			}
-		} else {
-			// If withIndex is false, just use the original map.
-			displayMap = this.map;
-		}
-
+		// Draw the map to the canvas.
 		for (let y = 0; y < this.bounds.height; y++) {
 			for (let x = 0; x < this.bounds.width; x++) {
-				const tileRow = displayMap[y]!;
-				const tile = tileRow[x];
-				ctx.fillStyle = tile === this.tiles.wall ? "#000" : "#fff";
+				const mapLeft = this.map[y]!;
+				const tile = mapLeft[x];
+				ctx.fillStyle =
+					tile === this.tiles.path ? "#ffffff" : "#000000";
 				ctx.fillRect(
 					x * tileWidth,
 					y * tileHeight,
@@ -201,6 +152,50 @@ export default class Dungeon {
 					tileHeight
 				);
 			}
+		}
+
+		// If withIndex is true, write the room.index to the center of each room to the canvas.
+		// If withColour is true, use a room.colour for each room else use blue for all rooms
+
+		for (const room of this.rooms) {
+			room.getTiles().forEach((pos) => {
+				// Check if the position is within the map bounds.
+				if (
+					pos.x >= 0 &&
+					pos.x < this.bounds.width &&
+					pos.y >= 0 &&
+					pos.y < this.bounds.height
+				) {
+					// Display room index in the copied map.
+					const mapLeft = this.map[pos.y]!;
+					mapLeft[pos.x] = room.index.toString().padEnd(2, " ");
+
+					if (withColour) {
+						ctx.fillStyle = room.colour;
+					} else {
+						ctx.fillStyle = "#ff0000";
+					}
+
+					ctx.fillRect(
+						pos.x * tileWidth,
+						pos.y * tileHeight,
+						tileWidth,
+						tileHeight
+					);
+
+					if (withIndex) {
+						ctx.fillStyle = "#ffffff";
+						ctx.font = "10px sans-serif";
+						ctx.textAlign = "center";
+						ctx.textBaseline = "middle";
+						ctx.fillText(
+							room.index.toString(),
+							pos.x * tileWidth + tileWidth / 2,
+							pos.y * tileHeight + tileHeight / 2
+						);
+					}
+				}
+			});
 		}
 
 		return canvas;
