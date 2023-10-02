@@ -30,25 +30,6 @@ yarn add simpledungeongenerator
 
 ## Usage
 
-### Javascript
-
-```javascript
-const { DungeonGenerator } = require("simpledungeongenerator");
-
-const dungeon = new DungeonGenerator({
-	width: 50,
-	height: 50,
-	minRoomSize: 5,
-	maxRoomSize: 10,
-	maxRooms: 10,
-	seed: "MyProjectName",
-});
-
-dungeon.drawToConsole();
-```
-
-### Typescript
-
 ```typescript
 import { DungeonGenerator } from "simpledungeongenerator";
 
