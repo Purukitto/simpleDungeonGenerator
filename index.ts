@@ -4,12 +4,6 @@ const defaultTiles = {
 	floor: "⛶",
 	path: "·",
 	wall: "■",
-	table: "T",
-	openDoor: "O",
-	closedDoor: "C",
-	stairs: "S",
-	grass: "g",
-	tree: "t",
 };
 
 const defaultOptions = {

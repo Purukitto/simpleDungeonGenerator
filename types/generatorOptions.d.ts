@@ -23,12 +23,6 @@ type GeneratorOptions = {
 		floor: string;
 		path: string;
 		wall: string;
-		table: string;
-		openDoor: string;
-		closedDoor: string;
-		stairs: string;
-		grass: string;
-		tree: string;
 	};
 	startIndex: number;
 };
