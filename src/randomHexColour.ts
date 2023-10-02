@@ -6,12 +6,12 @@
  * @returns {string} A random hex colour string
  *
  * @example
- * getRandomHexColor(rng); // => "#ff0000"
+ * getRandomHexColour(rng); // => "#ff0000"
  */
 
 import { PRNG } from "seedrandom";
 
-export default function getRandomHexColor(rng: PRNG) {
+export default function getRandomHexColour(rng: PRNG) {
 	// Generate random values for red, green, and blue components
 	const red = Math.floor(Math.random() * 256); // 0 to 255
 	const green = Math.floor(Math.random() * 256); // 0 to 255
