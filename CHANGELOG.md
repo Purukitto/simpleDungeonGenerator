@@ -1,5 +1,11 @@
 # simpledungeongenerator
 
+## 0.7.3
+
+### Patch Changes
+
+- 0f23ec9: Added iife dist for easy browser usage
+
 ## 0.7.2
 
 ### Patch Changes
