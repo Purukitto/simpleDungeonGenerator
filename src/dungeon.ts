@@ -403,24 +403,20 @@ export default class Dungeon {
 	}
 
 	#_addDoors() {
-		for (let pos of this.#_inflateBounds(this.bounds, -1)) {
-			if (this.#_getTile(pos) !== this.tiles.wall) continue;
+		// add doors to all rooms
+		for (const room of this.rooms) {
+			room.getTiles().forEach((pos) => {
+				// Check if the position neighbors a "path" tile.
+				for (const dir of ["N", "S", "E", "W"]) {
+					const neighborPos = this.#_addDirection(pos, dir)!;
 
-			let isDoor = false;
-
-			for (let dir of ["N", "S", "E", "W"]) {
-				if (
-					this.#_getTile(this.#_addDirection(pos, dir)!) ===
-					this.tiles.path
-				) {
-					isDoor = true;
-					break;
+					if (this.#_getTile(neighborPos) === this.tiles.path) {
+						// Carve a door at the position.
+						this.#_carve(neighborPos, this.tiles.door);
+						break;
+					}
 				}
-			}
-
-			if (isDoor) {
-				this.#_carve(pos, this.tiles.door);
-			}
+			});
 		}
 	}
 
