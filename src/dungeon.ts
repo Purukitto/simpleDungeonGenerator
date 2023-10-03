@@ -67,7 +67,7 @@ export default class Dungeon {
 		this.tiles = tiles;
 		this.map = Array.from({ length: maxH }, () => {
 			return Array.from({ length: maxW }, () => {
-				return tiles.wall;
+				return tiles.blank;
 			});
 		});
 		this.rooms = new Set();
@@ -78,15 +78,17 @@ export default class Dungeon {
 		for (var y = 1; y < this.bounds.height - 1; y += 2) {
 			for (var x = 1; x < this.bounds.width - 1; x += 2) {
 				let pos = { x, y };
-				if (!this.#_isWall(pos)) continue;
+				if (!this.#_isBlank(pos)) continue;
 
 				this.#_growMaze(pos, windingPercent);
 			}
 		}
 
-		this.#_connectUnconnectedRooms();
-		this.#_removeDeadEnds();
-		if (doors) this.#_addDoors();
+		this.#_connectAllRooms();
+		this.#_removeDeadEnds(); // TODO: Change logic to address new blank/wall logic
+
+		// this.#_connectUnconnectedRooms();
+		// if (doors) this.#_addDoors();
 	}
 
 	drawToConsole(withIndex = false) {
@@ -106,11 +108,19 @@ export default class Dungeon {
 						pos.y >= 0 &&
 						pos.y < this.bounds.height
 					) {
-						// Display room index in the copied map.
-						const displayMapLeft = displayMap[pos.y]!;
-						displayMapLeft[pos.x] = room.index
-							.toString()
-							.padEnd(2, " ");
+						// If edge wall
+						if (
+							pos.x !== room.x &&
+							pos.x !== room.x + room.width - 1 &&
+							pos.y !== room.y &&
+							pos.y !== room.y + room.height - 1
+						) {
+							// Display room index in the copied map.
+							const displayMapLeft = displayMap[pos.y]!;
+							displayMapLeft[pos.x] = room.index
+								.toString()
+								.padEnd(2, " ");
+						}
 					}
 				});
 			}
@@ -217,7 +227,7 @@ export default class Dungeon {
 		for (let i = 0; i < roomTries; i++) {
 			// TODO: Revisit this logic
 			const size = Math.max(
-				2,
+				4,
 				Math.floor(this.#rng() * (1 + 2 * extraRoomSize) + 1) +
 					extraRoomSize
 			);
@@ -251,7 +261,7 @@ export default class Dungeon {
 
 			var overlaps = false;
 
-			for (let otherRoom of this.rooms) {
+			for (const otherRoom of this.rooms) {
 				if (room.overlap(otherRoom)) {
 					overlaps = true;
 					break;
@@ -262,7 +272,10 @@ export default class Dungeon {
 
 			this.rooms.add(room);
 
+			// Carve a room, fill it with "floor" tiles with "wall" tiles around the edges.
 			room.getTiles().map((pos) => {
+				this.#_carve(pos);
+
 				// Check if pos is within the map bounds
 				if (
 					pos.x >= 0 &&
@@ -270,8 +283,18 @@ export default class Dungeon {
 					pos.y >= 0 &&
 					pos.y < this.bounds.height
 				) {
-					this.#_carve(pos);
+					// Check if the current position is on the edge of the room
+					if (
+						pos.x === room.x ||
+						pos.x === room.x + room.width - 1 ||
+						pos.y === room.y ||
+						pos.y === room.y + room.height - 1
+					) {
+						this.#_carve(pos, this.tiles.wall);
+					}
 				}
+
+				// Carve the room into the map.
 			});
 			roomIndex++;
 		}
@@ -339,14 +362,14 @@ export default class Dungeon {
 			done = true;
 
 			for (let pos of this.#_inflateBounds(this.bounds, -1)) {
-				if (this.#_getTile(pos) == this.tiles.wall) continue;
+				if (this.#_getTile(pos) == this.tiles.blank) continue;
 
 				// If it only has one exit, it's a dead end.
 				let exits = 0;
 				for (let dir of ["N", "S", "E", "W"]) {
 					if (
 						this.#_getTile(this.#_addDirection(pos, dir)!) !=
-						this.tiles.wall
+						this.tiles.blank
 					)
 						exits++;
 				}
@@ -354,30 +377,16 @@ export default class Dungeon {
 				if (exits > 1) continue;
 
 				done = false;
-				this.#_carve(pos, this.tiles.wall);
+				this.#_carve(pos, this.tiles.blank);
 			}
 		}
 	}
 
-	#_connectUnconnectedRooms() {
-		const allRooms = Array.from(this.rooms);
-		const room = allRooms.pop()!;
+	#_connectAllRooms() {
+		const roomsLeftToBeConnected = Array.from(this.rooms);
 
-		while (allRooms.length > 0) {
-			let toCheckLength = allRooms.length;
-
-			while (toCheckLength > 0) {
-				const otherRoom = allRooms[toCheckLength - 1]!;
-				if (this.#_areRoomsConnected(room, otherRoom)) {
-					allRooms.splice(toCheckLength - 1, 1);
-				}
-
-				toCheckLength--;
-			}
-
-			if (allRooms.length === 0) break;
-
-			const roomToConnect = allRooms.pop()!;
+		while (roomsLeftToBeConnected.length > 0) {
+			const roomToConnect = roomsLeftToBeConnected.pop()!;
 
 			const closestRoom = Array.from(this.rooms)
 				.filter((r) => r.index !== roomToConnect.index)
@@ -392,6 +401,106 @@ export default class Dungeon {
 
 			if (closestRoom) {
 				this.#_connectRooms(roomToConnect, closestRoom);
+				roomsLeftToBeConnected.splice(closestRoom.index - 1, 1);
+
+				console.log(
+					`Connected room ${roomToConnect.index} with room ${closestRoom.index}.`
+				);
+			} else {
+				roomsLeftToBeConnected.unshift(roomToConnect);
+				throw new Error(
+					`Could not connect room ${roomToConnect.index} with any other room.`
+				);
+			}
+		}
+	}
+
+	// Bresenham's line algorithm: modified to avoid diagonal lines.
+	#_connectRooms(room1: Room, room2: Room) {
+		const center1 = room1.getCenter();
+		const center2 = room2.getCenter();
+
+		// Determine the connection point
+		const connectX =
+			Math.floor(Math.random() * (center2.x - center1.x + 1)) + center1.x;
+		const connectY =
+			Math.floor(Math.random() * (center2.y - center1.y + 1)) + center1.y;
+
+		// Connect horizontally
+		if (connectY === center1.y) {
+			for (
+				let x = Math.min(center1.x, connectX);
+				x <= Math.max(center1.x, connectX);
+				x++
+			) {
+				if (this.#_getTile({ x, y: connectY }) === this.tiles.wall)
+					this.#_carve({ x, y: connectY }, this.tiles.door);
+				else if (
+					this.#_getTile({ x, y: connectY }) === this.tiles.blank
+				)
+					this.#_carve({ x, y: connectY }, this.tiles.path);
+			}
+		}
+		// Connect vertically
+		else if (connectX === center1.x) {
+			for (
+				let y = Math.min(center1.y, connectY);
+				y <= Math.max(center1.y, connectY);
+				y++
+			) {
+				if (this.#_getTile({ x: connectX, y }) === this.tiles.wall)
+					this.#_carve({ x: connectX, y }, this.tiles.door);
+				else if (
+					this.#_getTile({ x: connectX, y }) === this.tiles.blank
+				)
+					this.#_carve({ x: connectX, y }, this.tiles.path);
+			}
+		}
+	}
+
+	#_connectUnconnectedRooms() {
+		const allRooms = Array.from(this.rooms);
+		const room = allRooms.pop()!;
+
+		while (allRooms.length > 0) {
+			let toCheckLength = allRooms.length;
+
+			console.log(`Connecting room ${room.index}...`);
+
+			while (toCheckLength > 0) {
+				const otherRoom = allRooms[toCheckLength - 1]!;
+				if (this.#_areRoomsConnected(room, otherRoom)) {
+					allRooms.splice(toCheckLength - 1, 1);
+				}
+				toCheckLength--;
+			}
+
+			console.log(`Rooms left to connect: ${allRooms.length}`);
+
+			if (allRooms.length === 0) break;
+
+			const roomToConnect = allRooms.pop()!;
+
+			console.log(
+				`Connecting room ${room.index} with room ${roomToConnect.index}...`
+			);
+
+			const closestRoom = Array.from(this.rooms)
+				.filter((r) => r.index !== roomToConnect.index)
+				.reduce((prev, curr) => {
+					if (
+						roomToConnect.distanceTo(curr) <
+						roomToConnect.distanceTo(prev)
+					)
+						return curr;
+					return prev;
+				});
+
+			if (closestRoom) {
+				this.#_connectRooms(roomToConnect, closestRoom);
+				console.log(
+					`Connected room ${room.index} with room ${closestRoom.index}.`
+				);
 			} else {
 				console.log("Could not connect room.", room.index);
 				allRooms.unshift(roomToConnect);
@@ -399,6 +508,8 @@ export default class Dungeon {
 					`Could not connect room ${room.index} with any other room.`
 				);
 			}
+
+			console.log(`Rooms left to connect: ${allRooms.length}`);
 		}
 	}
 
@@ -417,41 +528,6 @@ export default class Dungeon {
 					}
 				}
 			});
-		}
-	}
-
-	// Bresenham's line algorithm: modified to avoid diagonal lines.
-	#_connectRooms(room1: Room, room2: Room) {
-		const center1 = room1.getCenter();
-		const center2 = room2.getCenter();
-		let startX = center1.x;
-		let startY = center1.y;
-		let endX = center2.x;
-		let endY = center2.y;
-
-		// Check relative positions and adjust connection direction
-		if (startX > endX) {
-			[startX, endX] = [endX, startX];
-		}
-		if (startY > endY) {
-			[startY, endY] = [endY, startY];
-		}
-
-		// Calculate the differences in coordinates
-		const dx = Math.abs(endX - startX);
-		const dy = Math.abs(endY - startY);
-
-		// Connect horizontally or vertically based on the shortest path
-		if (dx > dy) {
-			for (let x = startX; x <= endX; x++) {
-				if (this.#_getTile({ x, y: startY }) === this.tiles.wall)
-					this.#_carve({ x, y: startY }, this.tiles.path);
-			}
-		} else {
-			for (let y = startY; y <= endY; y++) {
-				if (this.#_getTile({ x: endX, y }) === this.tiles.wall)
-					this.#_carve({ x: endX, y }, this.tiles.path);
-			}
 		}
 	}
 
@@ -495,8 +571,10 @@ export default class Dungeon {
 			for (const dir of ["N", "S", "E", "W"]) {
 				const neighborPos = this.#_addDirection(currentPos, dir)!;
 
-				if (room2.containsPosition(neighborPos)) {
-					return true; // Found a path between room1 and room2.
+				if (this.#_getTile(neighborPos) === this.tiles.door) {
+					if (room2.containsPosition(neighborPos)) {
+						return true; // Found a path between room1 and room2.
+					}
 				}
 			}
 
@@ -527,8 +605,8 @@ export default class Dungeon {
 		if (row) row[pos.x] = tileType;
 	}
 
-	#_isWall(pos: { x: number; y: number }) {
-		return this.#_getTile(pos) === this.tiles.wall;
+	#_isBlank(pos: { x: number; y: number }) {
+		return this.#_getTile(pos) === this.tiles.blank;
 	}
 
 	#_getTile(pos: { x: number; y: number }) {
@@ -549,6 +627,18 @@ export default class Dungeon {
 		if (dir == "W") {
 			return { x: pos.x - stepValue, y: pos.y };
 		}
+		if (dir == "NE") {
+			return { x: pos.x + stepValue, y: pos.y - stepValue };
+		}
+		if (dir == "NW") {
+			return { x: pos.x - stepValue, y: pos.y - stepValue };
+		}
+		if (dir == "SE") {
+			return { x: pos.x + stepValue, y: pos.y + stepValue };
+		}
+		if (dir == "SW") {
+			return { x: pos.x - stepValue, y: pos.y + stepValue };
+		}
 	}
 
 	#_canCarve(pos: { x: number; y: number }, dir: string) {
@@ -568,7 +658,7 @@ export default class Dungeon {
 		)
 			return false;
 
-		return this.#_isWall(oneStep!) && this.#_isWall(twoStep!);
+		return this.#_isBlank(oneStep!) && this.#_isBlank(twoStep!);
 	}
 
 	#_inflateBounds(bounds: { height: number; width: number }, value: number) {
