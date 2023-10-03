@@ -2,14 +2,6 @@
  * Dungeon generator options.
  *
  * @class Dungeon
- * @property {number} maxH Maximum height of the dungeon.
- * @property {number} maxW Maximum width of the dungeon.
- * @property {string} seed Seed for the dungeon generator.
- * @property {number} roomTries Number of times to try to generate a room.
- * @property {number} extraRoomSize Extra size to add to the room.
- * @property {number} windingPercent Percent chance to continue in the same direction.
- * @property {object} tiles Tiles to use for the dungeon.
- * @property {number} startIndex Index to start room numbering from.
  *
  * @constructor
  * @param {number} maxH Maximum height of the dungeon.
@@ -20,6 +12,7 @@
  * @param {number} windingPercent Percent chance to continue in the same direction.
  * @param {object} tiles Tiles to use for the dungeon.
  * @param {number} startIndex Index to start room numbering from.
+ * @param {boolean} doors Weather or not to add doors.
  *
  * @returns Dungeon generator options.
  *
@@ -66,7 +59,8 @@ export default class Dungeon {
 		extraRoomSize: number,
 		windingPercent: number,
 		tiles: GeneratorOptions["tiles"],
-		startIndex: number
+		startIndex: number,
+		doors: boolean
 	) {
 		this.#rng = seedrandom(seed);
 		this.bounds = { height: maxH, width: maxW };
@@ -92,6 +86,7 @@ export default class Dungeon {
 
 		this.#_connectUnconnectedRooms();
 		this.#_removeDeadEnds();
+		if (doors) this.#_addDoors();
 	}
 
 	drawToConsole(withIndex = false) {
@@ -282,21 +277,6 @@ export default class Dungeon {
 		}
 	}
 
-	#_carve(pos: { x: number; y: number }, tileType?: MapTile) {
-		if (!tileType) tileType = this.tiles.floor;
-		const row = this.map[pos.y];
-		if (row) row[pos.x] = tileType;
-	}
-
-	#_isWall(pos: { x: number; y: number }) {
-		return this.#_getTile(pos) === this.tiles.wall;
-	}
-
-	#_getTile(pos: { x: number; y: number }) {
-		const row = this.map[pos.y];
-		if (row) return row[pos.x];
-	}
-
 	#_growMaze(start: { x: number; y: number }, windingPercent: number) {
 		let cells: { x: number; y: number }[] = [];
 		let lastDir: string = "";
@@ -352,41 +332,6 @@ export default class Dungeon {
 		}
 	}
 
-	#_addDirection(pos: { x: number; y: number }, dir: string, stepValue = 1) {
-		if (dir == "N") {
-			return { x: pos.x, y: pos.y - stepValue };
-		}
-		if (dir == "S") {
-			return { x: pos.x, y: pos.y + stepValue };
-		}
-		if (dir == "E") {
-			return { x: pos.x + stepValue, y: pos.y };
-		}
-		if (dir == "W") {
-			return { x: pos.x - stepValue, y: pos.y };
-		}
-	}
-
-	#_canCarve(pos: { x: number; y: number }, dir: string) {
-		const oneStep = this.#_addDirection(pos, dir);
-		const twoStep = this.#_addDirection(pos, dir, 2);
-		const threeStep = this.#_addDirection(pos, dir, 3);
-
-		// threeStep are out of bounds, return false
-		if (
-			!oneStep ||
-			!twoStep ||
-			!threeStep ||
-			threeStep.x < 0 ||
-			threeStep.x >= this.bounds.width ||
-			threeStep.y < 0 ||
-			threeStep.y >= this.bounds.height
-		)
-			return false;
-
-		return this.#_isWall(oneStep!) && this.#_isWall(twoStep!);
-	}
-
 	#_removeDeadEnds() {
 		let done = false;
 
@@ -412,26 +357,6 @@ export default class Dungeon {
 				this.#_carve(pos, this.tiles.wall);
 			}
 		}
-	}
-
-	#_inflateBounds(bounds: { height: number; width: number }, value: number) {
-		const positions = [];
-
-		for (
-			let y = Math.max(0, -value);
-			y < Math.min(bounds.height, bounds.height - value);
-			y++
-		) {
-			for (
-				let x = Math.max(0, -value);
-				x < Math.min(bounds.width, bounds.width - value);
-				x++
-			) {
-				positions.push({ x, y });
-			}
-		}
-
-		return positions;
 	}
 
 	#_connectUnconnectedRooms() {
@@ -473,6 +398,28 @@ export default class Dungeon {
 				throw new Error(
 					`Could not connect room ${room.index} with any other room.`
 				);
+			}
+		}
+	}
+
+	#_addDoors() {
+		for (let pos of this.#_inflateBounds(this.bounds, -1)) {
+			if (this.#_getTile(pos) !== this.tiles.wall) continue;
+
+			let isDoor = false;
+
+			for (let dir of ["N", "S", "E", "W"]) {
+				if (
+					this.#_getTile(this.#_addDirection(pos, dir)!) ===
+					this.tiles.path
+				) {
+					isDoor = true;
+					break;
+				}
+			}
+
+			if (isDoor) {
+				this.#_carve(pos, this.tiles.door);
 			}
 		}
 	}
@@ -576,5 +523,75 @@ export default class Dungeon {
 		}
 
 		return false; // No path found between room1 and room2.
+	}
+
+	#_carve(pos: { x: number; y: number }, tileType?: MapTile) {
+		if (!tileType) tileType = this.tiles.floor;
+		const row = this.map[pos.y];
+		if (row) row[pos.x] = tileType;
+	}
+
+	#_isWall(pos: { x: number; y: number }) {
+		return this.#_getTile(pos) === this.tiles.wall;
+	}
+
+	#_getTile(pos: { x: number; y: number }) {
+		const row = this.map[pos.y];
+		if (row) return row[pos.x];
+	}
+
+	#_addDirection(pos: { x: number; y: number }, dir: string, stepValue = 1) {
+		if (dir == "N") {
+			return { x: pos.x, y: pos.y - stepValue };
+		}
+		if (dir == "S") {
+			return { x: pos.x, y: pos.y + stepValue };
+		}
+		if (dir == "E") {
+			return { x: pos.x + stepValue, y: pos.y };
+		}
+		if (dir == "W") {
+			return { x: pos.x - stepValue, y: pos.y };
+		}
+	}
+
+	#_canCarve(pos: { x: number; y: number }, dir: string) {
+		const oneStep = this.#_addDirection(pos, dir);
+		const twoStep = this.#_addDirection(pos, dir, 2);
+		const threeStep = this.#_addDirection(pos, dir, 3);
+
+		// threeStep are out of bounds, return false
+		if (
+			!oneStep ||
+			!twoStep ||
+			!threeStep ||
+			threeStep.x < 0 ||
+			threeStep.x >= this.bounds.width ||
+			threeStep.y < 0 ||
+			threeStep.y >= this.bounds.height
+		)
+			return false;
+
+		return this.#_isWall(oneStep!) && this.#_isWall(twoStep!);
+	}
+
+	#_inflateBounds(bounds: { height: number; width: number }, value: number) {
+		const positions = [];
+
+		for (
+			let y = Math.max(0, -value);
+			y < Math.min(bounds.height, bounds.height - value);
+			y++
+		) {
+			for (
+				let x = Math.max(0, -value);
+				x < Math.min(bounds.width, bounds.width - value);
+				x++
+			) {
+				positions.push({ x, y });
+			}
+		}
+
+		return positions;
 	}
 }

@@ -9,6 +9,7 @@
  * @property {number} windingPercent
  * @property {Object} tiles
  * @property {number} startIndex
+ * @property {boolean} doors
  */
 
 type GeneratorOptions = {
@@ -23,6 +24,8 @@ type GeneratorOptions = {
 		floor: string;
 		path: string;
 		wall: string;
+		door: string;
 	};
 	startIndex: number;
+	doors: boolean;
 };
