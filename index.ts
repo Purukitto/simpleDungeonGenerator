@@ -4,6 +4,7 @@ const defaultTiles = {
 	floor: "⛶",
 	path: "·",
 	wall: "■",
+	door: "#",
 };
 
 const defaultOptions = {
@@ -16,6 +17,7 @@ const defaultOptions = {
 	windingPercent: 0,
 	tiles: defaultTiles,
 	startIndex: 1,
+	doors: false,
 };
 
 /**
@@ -33,10 +35,12 @@ function simpleDungeon(options?: GeneratorOptions) {
 	if (!options) options = defaultOptions;
 	// Options for the dungeon generator
 
-	const maxH = options.maxH; // Max height
+	const maxH =
+		typeof options.maxH != "undefined" ? options.maxH : defaultOptions.maxH; // Max height
 	if (maxH < 5) throw new Error("maxH must be greater than 5");
 
-	const maxW = options.maxW; // Max width
+	const maxW =
+		typeof options.maxW != "undefined" ? options.maxW : defaultOptions.maxW; // Max width
 	if (maxW < 5) throw new Error("maxW must be greater than 5");
 
 	const seed =
@@ -85,6 +89,11 @@ function simpleDungeon(options?: GeneratorOptions) {
 			? options.startIndex
 			: defaultOptions.startIndex; // Index to start at
 
+	const doors =
+		typeof options.doors !== "undefined"
+			? options.doors
+			: defaultOptions.doors; // Weather or not to add doors
+
 	// Create and return dungeon object
 	return new Dungeon(
 		maxH,
@@ -94,7 +103,8 @@ function simpleDungeon(options?: GeneratorOptions) {
 		extraRoomSize,
 		windingPercent,
 		tiles,
-		startIndex
+		startIndex,
+		doors
 	);
 }
 
