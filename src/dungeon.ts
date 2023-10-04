@@ -85,7 +85,7 @@ export default class Dungeon {
 		}
 
 		this.#_connectAllRooms();
-		this.#_removeDeadEnds(); // TODO: Change logic to address new blank/wall logic
+		// this.#_removeDeadEnds(); // TODO: Change logic to address new blank/wall logic
 
 		// this.#_connectUnconnectedRooms();
 		// if (doors) this.#_addDoors();
@@ -133,6 +133,7 @@ export default class Dungeon {
 		console.log(displayMap.map((row) => row.join(" ")).join("\n"));
 	}
 
+	// TODO: Add support 
 	drawToSVG({ withIndex = false, withColour = false }) {
 		const svgNS = "http://www.w3.org/2000/svg";
 		const svg = document.createElementNS(svgNS, "svg");
@@ -420,40 +421,59 @@ export default class Dungeon {
 		const center1 = room1.getCenter();
 		const center2 = room2.getCenter();
 
-		// Determine the connection point
-		const connectX =
-			Math.floor(Math.random() * (center2.x - center1.x + 1)) + center1.x;
-		const connectY =
-			Math.floor(Math.random() * (center2.y - center1.y + 1)) + center1.y;
+		let connectX;
+		let connectY;
+
+		// Determine connection point along the x-axis
+		if (Math.random() < 0.5) {
+			connectX =
+				Math.floor(Math.random() * (center2.x - center1.x + 1)) +
+				center1.x;
+			connectY = center1.y;
+		} else {
+			// Determine connection point along the y-axis
+			connectX = center1.x;
+			connectY =
+				Math.floor(Math.random() * (center2.y - center1.y + 1)) +
+				center1.y;
+		}
+
+		// Avoid connecting to the corners of the rooms
+		if (connectX === center1.x && connectY === center1.y) {
+			connectX++;
+		} else if (connectX === center2.x && connectY === center1.y) {
+			connectX--;
+		} else if (connectX === center1.x && connectY === center2.y) {
+			connectX++;
+		} else if (connectX === center2.x && connectY === center2.y) {
+			connectX--;
+		}
 
 		// Connect horizontally
-		if (connectY === center1.y) {
-			for (
-				let x = Math.min(center1.x, connectX);
-				x <= Math.max(center1.x, connectX);
-				x++
-			) {
-				if (this.#_getTile({ x, y: connectY }) === this.tiles.wall)
-					this.#_carve({ x, y: connectY }, this.tiles.door);
-				else if (
-					this.#_getTile({ x, y: connectY }) === this.tiles.blank
-				)
-					this.#_carve({ x, y: connectY }, this.tiles.path);
+		for (
+			let x = Math.min(center1.x, center2.x);
+			x <= Math.max(center1.x, center2.x);
+			x++
+		) {
+			if (x === connectX) continue;
+			if (this.#_getTile({ x, y: connectY }) === this.tiles.blank) {
+				this.#_carve({ x, y: connectY }, this.tiles.path);
+			} else if (this.#_getTile({ x, y: connectY }) === this.tiles.wall) {
+				this.#_carve({ x, y: connectY }, this.tiles.door);
 			}
 		}
+
 		// Connect vertically
-		else if (connectX === center1.x) {
-			for (
-				let y = Math.min(center1.y, connectY);
-				y <= Math.max(center1.y, connectY);
-				y++
-			) {
-				if (this.#_getTile({ x: connectX, y }) === this.tiles.wall)
-					this.#_carve({ x: connectX, y }, this.tiles.door);
-				else if (
-					this.#_getTile({ x: connectX, y }) === this.tiles.blank
-				)
-					this.#_carve({ x: connectX, y }, this.tiles.path);
+		for (
+			let y = Math.min(center1.y, center2.y);
+			y <= Math.max(center1.y, center2.y);
+			y++
+		) {
+			if (y === connectY) continue;
+			if (this.#_getTile({ x: connectX, y }) === this.tiles.blank) {
+				this.#_carve({ x: connectX, y }, this.tiles.path);
+			} else if (this.#_getTile({ x: connectX, y }) === this.tiles.wall) {
+				this.#_carve({ x: connectX, y }, this.tiles.door);
 			}
 		}
 	}

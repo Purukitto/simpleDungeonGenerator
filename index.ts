@@ -1,6 +1,7 @@
 import Dungeon from "./src/dungeon";
 
 const defaultTiles = {
+	blank: " ",
 	floor: "⛶",
 	path: "·",
 	wall: "■",
