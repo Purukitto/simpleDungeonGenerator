@@ -21,6 +21,7 @@ type GeneratorOptions = {
 	extraRoomSize: number;
 	windingPercent: number;
 	tiles: {
+		blank: string;
 		floor: string;
 		path: string;
 		wall: string;
