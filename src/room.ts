@@ -49,17 +49,11 @@ export default class Room {
 	}
 
 	overlap(room: Room) {
-		const roomBoundary = {
-			x: room.x - 1,
-			y: room.y - 1,
-			width: room.width + 1,
-			height: room.height + 1,
-		};
 		return (
-			this.x <= roomBoundary.x + roomBoundary.width &&
-			this.x + this.width >= roomBoundary.x &&
-			this.y <= roomBoundary.y + roomBoundary.height &&
-			this.y + this.height >= roomBoundary.y
+			this.x <= room.x + room.width &&
+			this.x + this.width >= room.x &&
+			this.y <= room.y + room.height &&
+			this.y + this.height >= room.y
 		);
 	}
 
