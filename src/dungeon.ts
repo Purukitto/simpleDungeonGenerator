@@ -93,7 +93,7 @@ export default class Dungeon {
 			}
 		}
 
-		this.#_connectRegions();
+		this.#_connectRegions(); //TODO: ROOM should also be a region and that will allow for easier door placement
 
 		this.#_removeDeadEnds(); // TODO: Change logic to address new blank/wall logic
 
@@ -368,18 +368,17 @@ export default class Dungeon {
 
 	#_removeDeadEnds() {
 		// Find dead ends and remove them.
-		// Dead ends are tiles that have only one path tile adjacent to them.
 		let done = false;
 
 		while (!done) {
 			done = true;
 
 			for (let pos of this.#_inflateBounds(this.bounds, -1)) {
-				if (this.#_getTile(pos) === this.tiles.blank) continue;
-
-				let exits = this.#_countAdjacentExits(pos);
-
-				if (exits > 1) continue;
+				if (
+					this.#_getTile(pos) !== this.tiles.path ||
+					this.#_countAdjacentExits(pos) > 1
+				)
+					continue;
 
 				done = false;
 				this.#_carve(pos, this.tiles.blank);
@@ -393,7 +392,10 @@ export default class Dungeon {
 		for (const dir of ["N", "S", "E", "W"]) {
 			const neighborPos = this.#_addDirection(pos, dir)!;
 
-			if (this.#_getTile(neighborPos) !== this.tiles.blank) {
+			if (
+				this.#_getTile(neighborPos) === this.tiles.path ||
+				this.#_getTile(neighborPos) === this.tiles.wall //TODO: change to door after init fix
+			) {
 				count++;
 			}
 		}
