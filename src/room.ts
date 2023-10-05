@@ -73,6 +73,46 @@ export default class Room {
 		return Math.sqrt(dx * dx + dy * dy);
 	}
 
+	getEdges(): { dir: string; x: number; y: number }[] {
+		const edges = [] as {
+			dir: string;
+			x: number;
+			y: number;
+		}[];
+
+		// edges exclude corners
+		for (let x = this.x + 1; x < this.x + this.width - 1; x++) {
+			edges.push({ dir: "N", x, y: this.y });
+			edges.push({ dir: "S", x, y: this.y + this.height - 1 });
+		}
+
+		for (let y = this.y + 1; y < this.y + this.height - 1; y++) {
+			edges.push({ dir: "W", x: this.x, y });
+			edges.push({ dir: "E", x: this.x + this.width - 1, y });
+		}
+
+		return edges;
+	}
+
+	getCorners(): { dir: string; x: number; y: number }[] {
+		const corners = [] as {
+			dir: string;
+			x: number;
+			y: number;
+		}[];
+
+		corners.push({ dir: "NW", x: this.x, y: this.y });
+		corners.push({ dir: "NE", x: this.x + this.width - 1, y: this.y });
+		corners.push({ dir: "SW", x: this.x, y: this.y + this.height - 1 });
+		corners.push({
+			dir: "SE",
+			x: this.x + this.width - 1,
+			y: this.y + this.height - 1,
+		});
+
+		return corners;
+	}
+
 	getTiles() {
 		const tiles = [];
 
