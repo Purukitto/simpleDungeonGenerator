@@ -53,7 +53,7 @@ dungeon.drawToConsole();
 | maxH           | number | 50           | Maximum height of the dungeon                             |
 | maxW           | number | 50           | Maximum width of the dungeon                              |
 | type           | string | "Base"       | Type of the dungeon to generate (Currently has no effect) |
-| roomTries      | number | 50           | Number of times to try to generate a room                 |
+| roomTries      | number | 150          | Number of times to try to generate a room                 |
 | extraRoomSize  | number | 0            | Extra size to add to the room                             |
 | windingPercent | number | 0            | Percentage of the dungeon to be winding                   |
 | tiles          | Object | defaultTiles | Tiles to use for the dungeon                              |

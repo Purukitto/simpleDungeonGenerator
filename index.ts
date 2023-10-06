@@ -3,13 +3,8 @@ import Dungeon from "./src/dungeon";
 const defaultTiles = {
 	floor: "⛶",
 	path: "·",
-	wall: "■",
-	table: "T",
-	openDoor: "O",
-	closedDoor: "C",
-	stairs: "S",
-	grass: "g",
-	tree: "t",
+	wall: " ",
+	door: "#",
 };
 
 const defaultOptions = {
@@ -17,7 +12,7 @@ const defaultOptions = {
 	maxW: 50,
 	seed: "purukitto",
 	type: "Base",
-	roomTries: 50,
+	roomTries: 150,
 	extraRoomSize: 0,
 	windingPercent: 0,
 	tiles: defaultTiles,
@@ -39,10 +34,12 @@ function simpleDungeon(options?: GeneratorOptions) {
 	if (!options) options = defaultOptions;
 	// Options for the dungeon generator
 
-	const maxH = options.maxH; // Max height
+	const maxH =
+		typeof options.maxH != "undefined" ? options.maxH : defaultOptions.maxH; // Max height
 	if (maxH < 5) throw new Error("maxH must be greater than 5");
 
-	const maxW = options.maxW; // Max width
+	const maxW =
+		typeof options.maxW != "undefined" ? options.maxW : defaultOptions.maxW; // Max width
 	if (maxW < 5) throw new Error("maxW must be greater than 5");
 
 	const seed =

@@ -2,14 +2,6 @@
  * Dungeon generator options.
  *
  * @class Dungeon
- * @property {number} maxH Maximum height of the dungeon.
- * @property {number} maxW Maximum width of the dungeon.
- * @property {string} seed Seed for the dungeon generator.
- * @property {number} roomTries Number of times to try to generate a room.
- * @property {number} extraRoomSize Extra size to add to the room.
- * @property {number} windingPercent Percent chance to continue in the same direction.
- * @property {object} tiles Tiles to use for the dungeon.
- * @property {number} startIndex Index to start room numbering from.
  *
  * @constructor
  * @param {number} maxH Maximum height of the dungeon.
@@ -20,6 +12,7 @@
  * @param {number} windingPercent Percent chance to continue in the same direction.
  * @param {object} tiles Tiles to use for the dungeon.
  * @param {number} startIndex Index to start room numbering from.
+ * @param {boolean} doors Weather or not to add doors.
  *
  * @returns Dungeon generator options.
  *
@@ -57,6 +50,9 @@ export default class Dungeon {
 	tiles: GeneratorOptions["tiles"];
 	bounds: { height: number; width: number };
 	rooms: Set<Room>;
+	_regions: number[][];
+	windingPercent: number;
+	#currentRegion = -1;
 
 	constructor(
 		maxH: number,
@@ -76,21 +72,28 @@ export default class Dungeon {
 				return tiles.wall;
 			});
 		});
+		this._regions = Array.from({ length: maxH }, () => {
+			return Array.from({ length: maxW }, () => {
+				return -1;
+			});
+		});
+		this.windingPercent = windingPercent;
 		this.rooms = new Set();
 
 		this.#_addRoom(roomTries, extraRoomSize, startIndex);
 
 		// Fill in all of the empty space with mazes.
-		for (var y = 1; y < this.bounds.height - 1; y += 2) {
-			for (var x = 1; x < this.bounds.width - 1; x += 2) {
+		for (var y = 0; y < this.bounds.height - 1; y += 2) {
+			for (var x = 0; x < this.bounds.width - 1; x += 2) {
 				let pos = { x, y };
 				if (!this.#_isWall(pos)) continue;
 
-				this.#_growMaze(pos, windingPercent);
+				this.#_growMaze(pos);
 			}
 		}
 
-		this.#_connectUnconnectedRooms();
+		this.#_connectRegions();
+
 		this.#_removeDeadEnds();
 	}
 
@@ -111,11 +114,19 @@ export default class Dungeon {
 						pos.y >= 0 &&
 						pos.y < this.bounds.height
 					) {
-						// Display room index in the copied map.
-						const displayMapLeft = displayMap[pos.y]!;
-						displayMapLeft[pos.x] = room.index
-							.toString()
-							.padEnd(2, " ");
+						// If edge wall
+						if (
+							pos.x !== room.x &&
+							pos.x !== room.x + room.width - 1 &&
+							pos.y !== room.y &&
+							pos.y !== room.y + room.height - 1
+						) {
+							// Display room index in the copied map.
+							const displayMapLeft = displayMap[pos.y]!;
+							displayMapLeft[pos.x] = room.index
+								.toString()
+								.padEnd(2, " ");
+						}
 					}
 				});
 			}
@@ -223,8 +234,7 @@ export default class Dungeon {
 			// TODO: Revisit this logic
 			const size = Math.max(
 				2,
-				Math.floor(this.#rng() * (1 + 2 * extraRoomSize) + 1) +
-					extraRoomSize
+				Math.floor(this.#rng() * (1 + 2 * extraRoomSize) + 1)
 			);
 			const rectangularity = Math.floor(this.#rng() * (1 + size / 2));
 
@@ -256,7 +266,7 @@ export default class Dungeon {
 
 			var overlaps = false;
 
-			for (let otherRoom of this.rooms) {
+			for (const otherRoom of this.rooms) {
 				if (room.overlap(otherRoom)) {
 					overlaps = true;
 					break;
@@ -267,6 +277,9 @@ export default class Dungeon {
 
 			this.rooms.add(room);
 
+			this.#currentRegion++;
+
+			// Carve a room, fill it with "floor" tiles
 			room.getTiles().map((pos) => {
 				// Check if pos is within the map bounds
 				if (
@@ -275,6 +288,8 @@ export default class Dungeon {
 					pos.y >= 0 &&
 					pos.y < this.bounds.height
 				) {
+					// Carve the room into the map.
+
 					this.#_carve(pos);
 				}
 			});
@@ -282,25 +297,11 @@ export default class Dungeon {
 		}
 	}
 
-	#_carve(pos: { x: number; y: number }, tileType?: MapTile) {
-		if (!tileType) tileType = this.tiles.floor;
-		const row = this.map[pos.y];
-		if (row) row[pos.x] = tileType;
-	}
-
-	#_isWall(pos: { x: number; y: number }) {
-		return this.#_getTile(pos) === this.tiles.wall;
-	}
-
-	#_getTile(pos: { x: number; y: number }) {
-		const row = this.map[pos.y];
-		if (row) return row[pos.x];
-	}
-
-	#_growMaze(start: { x: number; y: number }, windingPercent: number) {
+	#_growMaze(start: { x: number; y: number }) {
 		let cells: { x: number; y: number }[] = [];
 		let lastDir: string = "";
 
+		this.#currentRegion++;
 		this.#_carve(start, this.tiles.path);
 
 		cells.push(start);
@@ -324,7 +325,7 @@ export default class Dungeon {
 				let dir: string;
 				if (
 					unmadeCells.includes(lastDir) &&
-					Math.floor(this.#rng() * 101) > windingPercent //TODO: Revisit this logic, not a big influence
+					Math.floor(this.#rng() * 101) > this.windingPercent //TODO: Revisit this logic, not a big influence
 				) {
 					dir = lastDir;
 				} else {
@@ -352,6 +353,163 @@ export default class Dungeon {
 		}
 	}
 
+	#_removeDeadEnds() {
+		// Find dead ends and remove them.
+		let done = false;
+
+		while (!done) {
+			done = true;
+
+			for (let x = 0; x < this.bounds.width; x++) {
+				for (let y = 0; y < this.bounds.height; y++) {
+					const pos = { x, y };
+					if (
+						this.#_getTile(pos) === this.tiles.wall ||
+						this.#_countAdjacentExits(pos) > 1
+					)
+						continue;
+
+					done = false;
+					this.#_carve(pos, this.tiles.wall);
+				}
+			}
+		}
+	}
+
+	#_countAdjacentExits(pos: { x: number; y: number }) {
+		let count = 0;
+
+		for (const dir of ["N", "S", "E", "W"]) {
+			const neighborPos = this.#_addDirection(pos, dir)!;
+
+			if (
+				this.#_getTile(neighborPos) !== this.tiles.wall &&
+				neighborPos.x > -1 &&
+				neighborPos.x < this.bounds.width &&
+				neighborPos.y > -1 &&
+				neighborPos.y < this.bounds.height
+			) {
+				count++;
+			}
+		}
+
+		return count;
+	}
+
+	#_connectRegions() {
+		// Set to keep track of all connectors between regions.
+		const regionConnectors = new Map<{ x: number; y: number }, number[]>();
+
+		// Find all of the tiles that can connect two (or more) region
+		for (let x = 1; x < this.bounds.width - 1; x++) {
+			for (let y = 1; y < this.bounds.height - 1; y++) {
+				const pos = { x, y };
+
+				// Can't already be part of a region.
+				if (this.#_getTile(pos) !== this.tiles.wall) continue;
+
+				const regions = new Set<number>();
+				for (const dir of ["N", "S", "E", "W"]) {
+					const neighborPos = this.#_addDirection(pos, dir)!;
+					const region =
+						this._regions[neighborPos.y]![neighborPos.x]!;
+					if (region > 0) regions.add(region);
+				}
+
+				if (regions.size < 2) continue;
+
+				regionConnectors.set(pos, Array.from(regions));
+			}
+		}
+
+		let connectors = Array.from(regionConnectors.keys());
+
+		// Keep track of which regions have been merged.
+		const merged = new Map<number, number>();
+		const openRegions = new Set<number>(); // Set of regions yet to be merged.
+
+		for (let i = 0; i <= this.#currentRegion; i++) {
+			merged.set(i, i);
+			openRegions.add(i);
+		}
+
+		// Keep connecting regions until we're down to one.
+		while (openRegions.size > 1) {
+			if (connectors.length < 1) break;
+			const connector =
+				connectors[Math.floor(this.#rng() * connectors.length)]!;
+
+			// Carve the connection.
+			this.#_addJunction(connector);
+
+			// Merge the connected regions.
+			// We'll pick one region and map all of the other regions to its index.
+			const regions = regionConnectors
+				.get(connector)!
+				.map((region) => merged.get(region)!);
+
+			const dest = regions[0]!;
+			const sources = regions.slice(1);
+
+			// Merge all of the affected regions.
+			for (let i = 0; i <= this.#currentRegion; i++) {
+				if (sources.includes(merged.get(i)!)) {
+					merged.set(i, dest);
+				}
+			}
+
+			// The sources are no longer in use.
+			sources.forEach((source) => openRegions.delete(source));
+
+			// Remove any connectors that aren't needed anymore.
+			connectors = connectors.filter((pos) => {
+				// Don't allow connectors right next to each other.
+				if (
+					Math.abs(connector.x - pos.x) +
+						Math.abs(connector.y - pos.y) <
+					2
+				)
+					return false;
+
+				// If the connector no long spans different regions, we don't need it.
+				const regionsLeft: Set<number> = new Set(
+					regionConnectors
+						.get(pos)!
+						.map((region) => merged.get(region)!)
+				);
+
+				if (regionsLeft.size > 1) return true;
+
+				return false;
+			});
+		}
+	}
+
+	#_addJunction(pos: { x: number; y: number }) {
+		//TODO: Add different kind of connectors?
+
+		if (this.#rng() <= 0.25) this.#_carve(pos, this.tiles.path);
+		else this.#_carve(pos, this.tiles.door);
+	}
+
+	#_carve(pos: { x: number; y: number }, tileType?: MapTile) {
+		if (!tileType) tileType = this.tiles.floor;
+		const row = this.map[pos.y];
+		if (row) {
+			row[pos.x] = tileType;
+			this._regions[pos.y]![pos.x] = this.#currentRegion;
+		}
+	}
+
+	#_isWall(pos: { x: number; y: number }) {
+		return this.#_getTile(pos) === this.tiles.wall;
+	}
+
+	#_getTile(pos: { x: number; y: number }) {
+		const row = this.map[pos.y];
+		if (row) return row[pos.x];
+	}
+
 	#_addDirection(pos: { x: number; y: number }, dir: string, stepValue = 1) {
 		if (dir == "N") {
 			return { x: pos.x, y: pos.y - stepValue };
@@ -364,6 +522,18 @@ export default class Dungeon {
 		}
 		if (dir == "W") {
 			return { x: pos.x - stepValue, y: pos.y };
+		}
+		if (dir == "NE") {
+			return { x: pos.x + stepValue, y: pos.y - stepValue };
+		}
+		if (dir == "NW") {
+			return { x: pos.x - stepValue, y: pos.y - stepValue };
+		}
+		if (dir == "SE") {
+			return { x: pos.x + stepValue, y: pos.y + stepValue };
+		}
+		if (dir == "SW") {
+			return { x: pos.x - stepValue, y: pos.y + stepValue };
 		}
 	}
 
@@ -385,196 +555,5 @@ export default class Dungeon {
 			return false;
 
 		return this.#_isWall(oneStep!) && this.#_isWall(twoStep!);
-	}
-
-	#_removeDeadEnds() {
-		let done = false;
-
-		while (!done) {
-			done = true;
-
-			for (let pos of this.#_inflateBounds(this.bounds, -1)) {
-				if (this.#_getTile(pos) == this.tiles.wall) continue;
-
-				// If it only has one exit, it's a dead end.
-				let exits = 0;
-				for (let dir of ["N", "S", "E", "W"]) {
-					if (
-						this.#_getTile(this.#_addDirection(pos, dir)!) !=
-						this.tiles.wall
-					)
-						exits++;
-				}
-
-				if (exits > 1) continue;
-
-				done = false;
-				this.#_carve(pos, this.tiles.wall);
-			}
-		}
-	}
-
-	#_inflateBounds(bounds: { height: number; width: number }, value: number) {
-		const positions = [];
-
-		for (
-			let y = Math.max(0, -value);
-			y < Math.min(bounds.height, bounds.height - value);
-			y++
-		) {
-			for (
-				let x = Math.max(0, -value);
-				x < Math.min(bounds.width, bounds.width - value);
-				x++
-			) {
-				positions.push({ x, y });
-			}
-		}
-
-		return positions;
-	}
-
-	#_connectUnconnectedRooms() {
-		const allRooms = Array.from(this.rooms);
-		const room = allRooms.pop()!;
-
-		while (allRooms.length > 0) {
-			let toCheckLength = allRooms.length;
-
-			while (toCheckLength > 0) {
-				const otherRoom = allRooms[toCheckLength - 1]!;
-				if (this.#_areRoomsConnected(room, otherRoom)) {
-					allRooms.splice(toCheckLength - 1, 1);
-				}
-
-				toCheckLength--;
-			}
-
-			if (allRooms.length === 0) break;
-
-			const roomToConnect = allRooms.pop()!;
-
-			const closestRoom = Array.from(this.rooms)
-				.filter((r) => r.index !== roomToConnect.index)
-				.reduce((prev, curr) => {
-					if (
-						roomToConnect.distanceTo(curr) <
-						roomToConnect.distanceTo(prev)
-					)
-						return curr;
-					return prev;
-				});
-
-			if (closestRoom) {
-				this.#_connectRooms(roomToConnect, closestRoom);
-			} else {
-				console.log("Could not connect room.", room.index);
-				allRooms.unshift(roomToConnect);
-				throw new Error(
-					`Could not connect room ${room.index} with any other room.`
-				);
-			}
-		}
-	}
-
-	// Bresenham's line algorithm: modified to avoid diagonal lines.
-	#_connectRooms(room1: Room, room2: Room) {
-		const center1 = room1.getCenter();
-		const center2 = room2.getCenter();
-		let startX = center1.x;
-		let startY = center1.y;
-		let endX = center2.x;
-		let endY = center2.y;
-
-		// Check relative positions and adjust connection direction
-		if (startX > endX) {
-			[startX, endX] = [endX, startX];
-		}
-		if (startY > endY) {
-			[startY, endY] = [endY, startY];
-		}
-
-		// Calculate the differences in coordinates
-		const dx = Math.abs(endX - startX);
-		const dy = Math.abs(endY - startY);
-
-		// Connect horizontally or vertically based on the shortest path
-		if (dx > dy) {
-			for (let x = startX; x <= endX; x++) {
-				if (this.#_getTile({ x, y: startY }) === this.tiles.wall)
-					this.#_carve({ x, y: startY }, this.tiles.path);
-			}
-		} else {
-			for (let y = startY; y <= endY; y++) {
-				if (this.#_getTile({ x: endX, y }) === this.tiles.wall)
-					this.#_carve({ x: endX, y }, this.tiles.path);
-			}
-		}
-	}
-
-	#_areRoomsConnected(room1: Room, room2: Room): boolean {
-		// Create a set to keep track of visited tiles/positions.
-		const visited = new Set<string>();
-
-		// Create a queue for BFS.
-		const queue: { x: number; y: number }[] = [];
-
-		// Find a starting position within the surrounding area that is on a "path" tile.
-		let start = null;
-
-		// Find a valid starting position within the surrounding area.
-		for (const pos of room1.getTiles()) {
-			for (const dir of ["N", "S", "E", "W"]) {
-				const neighborPos = this.#_addDirection(pos, dir)!;
-
-				if (this.#_getTile(neighborPos) === this.tiles.path) {
-					start = neighborPos;
-					break;
-				}
-			}
-			if (start) break; // Found a valid starting position.
-		}
-
-		if (!start) {
-			// No starting position on a neighboring "path" tile found in room1.
-			return false;
-		}
-
-		queue.push(start);
-
-		while (queue.length > 0) {
-			const currentPos = queue.shift()!;
-
-			// Mark the current position as visited.
-			visited.add(`${currentPos.x},${currentPos.y}`);
-
-			// Check if the current position neighbors room2
-			for (const dir of ["N", "S", "E", "W"]) {
-				const neighborPos = this.#_addDirection(currentPos, dir)!;
-
-				if (room2.containsPosition(neighborPos)) {
-					return true; // Found a path between room1 and room2.
-				}
-			}
-
-			// Explore neighboring positions.
-			for (const dir of ["N", "S", "E", "W"]) {
-				const neighborPos = this.#_addDirection(currentPos, dir)!;
-
-				const neighborPosKey = `${neighborPos.x},${neighborPos.y}`;
-
-				// Check if the neighbor position is not visited, and is a valid "path" or "floor" tile.
-				if (
-					!visited.has(neighborPosKey) &&
-					(this.#_getTile(neighborPos) === this.tiles.path ||
-						this.#_getTile(neighborPos) === this.tiles.floor)
-				) {
-					// Add the neighbor position to the queue for further exploration.
-					queue.push(neighborPos);
-				}
-			}
-		}
-
-		return false; // No path found between room1 and room2.
 	}
 }
