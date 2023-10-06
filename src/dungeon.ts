@@ -50,7 +50,7 @@ export default class Dungeon {
 	tiles: GeneratorOptions["tiles"];
 	bounds: { height: number; width: number };
 	rooms: Set<Room>;
-	regions: number[][];
+	_regions: number[][];
 	windingPercent: number;
 	#currentRegion = -1;
 
@@ -70,10 +70,10 @@ export default class Dungeon {
 		this.tiles = tiles;
 		this.map = Array.from({ length: maxH }, () => {
 			return Array.from({ length: maxW }, () => {
-				return tiles.blank;
+				return tiles.wall;
 			});
 		});
-		this.regions = Array.from({ length: maxH }, () => {
+		this._regions = Array.from({ length: maxH }, () => {
 			return Array.from({ length: maxW }, () => {
 				return -1;
 			});
@@ -87,17 +87,15 @@ export default class Dungeon {
 		for (var y = 0; y < this.bounds.height - 1; y += 2) {
 			for (var x = 0; x < this.bounds.width - 1; x += 2) {
 				let pos = { x, y };
-				if (!this.#_isBlank(pos)) continue;
+				if (!this.#_isWall(pos)) continue;
 
 				this.#_growMaze(pos);
 			}
 		}
 
-		this.#_connectRegions(); //TODO: ROOM should also be a region and that will allow for easier door placement
+		this.#_connectRegions();
 
-		this.#_removeDeadEnds(); // TODO: Change logic to address new blank/wall logic
-
-		// if (doors) this.#_addDoors();
+		this.#_removeDeadEnds(); //TODO: work on this
 	}
 
 	drawToConsole(withIndex = false) {
@@ -142,7 +140,6 @@ export default class Dungeon {
 		console.log(displayMap.map((row) => row.join(" ")).join("\n"));
 	}
 
-	// TODO: Add support
 	drawToSVG({ withIndex = false, withColour = false }) {
 		const svgNS = "http://www.w3.org/2000/svg";
 		const svg = document.createElementNS(svgNS, "svg");
@@ -237,9 +234,8 @@ export default class Dungeon {
 		for (let i = 0; i < roomTries; i++) {
 			// TODO: Revisit this logic
 			const size = Math.max(
-				4,
-				Math.floor(this.#rng() * (1 + 2 * extraRoomSize) + 1) +
-					extraRoomSize
+				2,
+				Math.floor(this.#rng() * (1 + 2 * extraRoomSize) + 1)
 			);
 			const rectangularity = Math.floor(this.#rng() * (1 + size / 2));
 
@@ -282,10 +278,10 @@ export default class Dungeon {
 
 			this.rooms.add(room);
 
-			// Carve a room, fill it with "floor" tiles with "wall" tiles around the edges.
-			room.getTiles().map((pos) => {
-				this.#_carve(pos);
+			this.#currentRegion++;
 
+			// Carve a room, fill it with "floor" tiles
+			room.getTiles().map((pos) => {
 				// Check if pos is within the map bounds
 				if (
 					pos.x >= 0 &&
@@ -293,18 +289,10 @@ export default class Dungeon {
 					pos.y >= 0 &&
 					pos.y < this.bounds.height
 				) {
-					// Check if the current position is on the edge of the room
-					if (
-						pos.x === room.x ||
-						pos.x === room.x + room.width - 1 ||
-						pos.y === room.y ||
-						pos.y === room.y + room.height - 1
-					) {
-						this.#_carve(pos, this.tiles.wall);
-					}
-				}
+					// Carve the room into the map.
 
-				// Carve the room into the map.
+					this.#_carve(pos);
+				}
 			});
 			roomIndex++;
 		}
@@ -373,15 +361,18 @@ export default class Dungeon {
 		while (!done) {
 			done = true;
 
-			for (let pos of this.#_inflateBounds(this.bounds, -1)) {
-				if (
-					this.#_getTile(pos) !== this.tiles.path ||
-					this.#_countAdjacentExits(pos) > 1
-				)
-					continue;
+			for (let x = 0; x < this.bounds.width; x++) {
+				for (let y = 0; y < this.bounds.height; y++) {
+					const pos = { x, y };
+					if (
+						this.#_getTile(pos) === this.tiles.wall ||
+						this.#_countAdjacentExits(pos) > 1
+					)
+						continue;
 
-				done = false;
-				this.#_carve(pos, this.tiles.blank);
+					done = false;
+					this.#_carve(pos, this.tiles.wall);
+				}
 			}
 		}
 	}
@@ -393,8 +384,11 @@ export default class Dungeon {
 			const neighborPos = this.#_addDirection(pos, dir)!;
 
 			if (
-				this.#_getTile(neighborPos) === this.tiles.path ||
-				this.#_getTile(neighborPos) === this.tiles.wall //TODO: change to door after init fix
+				this.#_getTile(neighborPos) !== this.tiles.wall &&
+				neighborPos.x > -1 &&
+				neighborPos.x < this.bounds.width &&
+				neighborPos.y > -1 &&
+				neighborPos.y < this.bounds.height
 			) {
 				count++;
 			}
@@ -404,73 +398,102 @@ export default class Dungeon {
 	}
 
 	#_connectRegions() {
-		// Find all of the tiles that can connect two (or more) region
-		const regionConnectors = new Set<string>();
+		// Set to keep track of all connectors between regions.
+		const regionConnectors = new Map<{ x: number; y: number }, number[]>();
 
-		for (let y = 1; y < this.bounds.height - 1; y++) {
-			for (let x = 1; x < this.bounds.width - 1; x++) {
+		// Find all of the tiles that can connect two (or more) region
+		for (let x = 1; x < this.bounds.width - 1; x++) {
+			for (let y = 1; y < this.bounds.height - 1; y++) {
 				const pos = { x, y };
 
-				if (this.#_getTile(pos) !== this.tiles.blank) continue;
+				// Can't already be part of a region.
+				if (this.#_getTile(pos) !== this.tiles.wall) continue;
 
-				// Check if the tile is a connector.
 				const regions = new Set<number>();
-
 				for (const dir of ["N", "S", "E", "W"]) {
 					const neighborPos = this.#_addDirection(pos, dir)!;
-					const region = this.regions[neighborPos.y]![neighborPos.x]!;
-
-					if (region > 0) {
-						regions.add(region);
-					}
+					const region =
+						this._regions[neighborPos.y]![neighborPos.x]!;
+					if (region > 0) regions.add(region);
 				}
 
 				if (regions.size < 2) continue;
 
-				const regionList = Array.from(regions).sort().join(",");
-
-				// add their pos to a list and the regions they connect to a list.
-				regionConnectors.add(`${x},${y}:${regionList}`);
+				regionConnectors.set(pos, Array.from(regions));
 			}
 		}
 
-		while (regionConnectors.size > 0) {
-			const connector = regionConnectors.values().next().value;
-			const [XY, regions] = connector.split(":");
-			const [xPos, yPos] = XY.split(",");
-			const [region1, region2] = regions.split(",");
-			const pos = { x: +xPos, y: +yPos };
+		let connectors = Array.from(regionConnectors.keys());
 
-			this.#_carve(pos, this.tiles.path);
+		// Keep track of which regions have been merged.
+		const merged = new Map<number, number>();
+		const openRegions = new Set<number>(); // Set of regions yet to be merged.
 
-			// Merge the two regions
-			this.#_mergeRegions(+region1, +region2);
+		for (let i = 0; i <= this.#currentRegion; i++) {
+			merged.set(i, i);
+			openRegions.add(i);
+		}
 
-			// Remove the connector from the list
-			regionConnectors.delete(connector);
+		// Keep connecting regions until we're down to one.
+		while (openRegions.size > 1) {
+			if (connectors.length < 1) break;
+			const connector =
+				connectors[Math.floor(this.#rng() * connectors.length)]!;
 
-			// delete all other connectors that connect these two regions
-			for (const otherConnector of regionConnectors) {
-				if (
-					otherConnector.includes(region1) &&
-					otherConnector.includes(region2) &&
-					Math.floor(this.#rng() * 101) > this.windingPercent
-				) {
-					regionConnectors.delete(otherConnector);
+			// Carve the connection.
+			this.#_addJunction(connector);
+
+			// Merge the connected regions.
+			// We'll pick one region and map all of the other regions to its index.
+			const regions = regionConnectors
+				.get(connector)!
+				.map((region) => merged.get(region)!);
+
+			const dest = regions[0]!;
+			const sources = regions.slice(1);
+
+			// Merge all of the affected regions.
+			for (let i = 0; i <= this.#currentRegion; i++) {
+				if (sources.includes(merged.get(i)!)) {
+					merged.set(i, dest);
 				}
 			}
+
+			// The sources are no longer in use.
+			sources.forEach((source) => openRegions.delete(source));
+
+			// Remove any connectors that aren't needed anymore.
+			connectors = connectors.filter((pos) => {
+				// Don't allow connectors right next to each other.
+				if (
+					Math.abs(connector.x - pos.x) +
+						Math.abs(connector.y - pos.y) <
+					2
+				)
+					return false;
+
+				// If the connector no long spans different regions, we don't need it.
+				const regionsLeft: Set<number> = new Set(
+					regionConnectors
+						.get(pos)!
+						.map((region) => merged.get(region)!)
+				);
+
+				if (regionsLeft.size > 1) return true;
+
+				return false;
+			});
 		}
 	}
 
-	#_mergeRegions(region1: number, region2: number) {
-		// Merge the two regions
-		for (let y = 0; y < this.bounds.height; y++) {
-			for (let x = 0; x < this.bounds.width; x++) {
-				if (this.regions[y]![x] === region2) {
-					this.regions[y]![x] = region1;
-				}
-			}
-		}
+	#_addJunction(pos: { x: number; y: number }) {
+		//TODO: Add different kind of connectors?
+		// if (this.#rng() <= 0.25) {
+		//   setTile(pos, rng.oneIn(3) ? Tiles.openDoor : Tiles.floor);
+		// } else {
+		//   setTile(pos, Tiles.closedDoor);
+		// }
+		this.#_carve(pos, this.tiles.door);
 	}
 
 	#_carve(pos: { x: number; y: number }, tileType?: MapTile) {
@@ -478,12 +501,12 @@ export default class Dungeon {
 		const row = this.map[pos.y];
 		if (row) {
 			row[pos.x] = tileType;
-			this.regions[pos.y]![pos.x] = this.#currentRegion;
+			this._regions[pos.y]![pos.x] = this.#currentRegion;
 		}
 	}
 
-	#_isBlank(pos: { x: number; y: number }) {
-		return this.#_getTile(pos) === this.tiles.blank;
+	#_isWall(pos: { x: number; y: number }) {
+		return this.#_getTile(pos) === this.tiles.wall;
 	}
 
 	#_getTile(pos: { x: number; y: number }) {
@@ -535,18 +558,6 @@ export default class Dungeon {
 		)
 			return false;
 
-		return this.#_isBlank(oneStep!) && this.#_isBlank(twoStep!);
-	}
-
-	#_inflateBounds(bounds: { height: number; width: number }, value: number) {
-		const positions = [];
-
-		for (let y = -value; y < bounds.height + value; y++) {
-			for (let x = -value; x < bounds.width + value; x++) {
-				positions.push({ x, y });
-			}
-		}
-
-		return positions;
+		return this.#_isWall(oneStep!) && this.#_isWall(twoStep!);
 	}
 }
