@@ -1,10 +1,9 @@
 import Dungeon from "./src/dungeon";
 
 const defaultTiles = {
-	blank: " ",
 	floor: "⛶",
 	path: "·",
-	wall: "■",
+	wall: " ",
 	door: "#",
 };
 
@@ -13,7 +12,7 @@ const defaultOptions = {
 	maxW: 50,
 	seed: "purukitto",
 	type: "Base",
-	roomTries: 50,
+	roomTries: 150,
 	extraRoomSize: 0,
 	windingPercent: 0,
 	tiles: defaultTiles,
