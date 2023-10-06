@@ -17,7 +17,6 @@ const defaultOptions = {
 	windingPercent: 0,
 	tiles: defaultTiles,
 	startIndex: 1,
-	doors: false,
 };
 
 /**
@@ -89,11 +88,6 @@ function simpleDungeon(options?: GeneratorOptions) {
 			? options.startIndex
 			: defaultOptions.startIndex; // Index to start at
 
-	const doors =
-		typeof options.doors !== "undefined"
-			? options.doors
-			: defaultOptions.doors; // Weather or not to add doors
-
 	// Create and return dungeon object
 	return new Dungeon(
 		maxH,
@@ -103,8 +97,7 @@ function simpleDungeon(options?: GeneratorOptions) {
 		extraRoomSize,
 		windingPercent,
 		tiles,
-		startIndex,
-		doors
+		startIndex
 	);
 }
 

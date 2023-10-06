@@ -62,8 +62,7 @@ export default class Dungeon {
 		extraRoomSize: number,
 		windingPercent: number,
 		tiles: GeneratorOptions["tiles"],
-		startIndex: number,
-		doors: boolean
+		startIndex: number
 	) {
 		this.#rng = seedrandom(seed);
 		this.bounds = { height: maxH, width: maxW };
@@ -95,7 +94,7 @@ export default class Dungeon {
 
 		this.#_connectRegions();
 
-		this.#_removeDeadEnds(); //TODO: work on this
+		this.#_removeDeadEnds();
 	}
 
 	drawToConsole(withIndex = false) {

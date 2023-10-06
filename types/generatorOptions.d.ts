@@ -27,5 +27,4 @@ type GeneratorOptions = {
 		door: string;
 	};
 	startIndex: number;
-	doors: boolean;
 };
