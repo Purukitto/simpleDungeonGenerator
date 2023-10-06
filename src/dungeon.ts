@@ -487,12 +487,9 @@ export default class Dungeon {
 
 	#_addJunction(pos: { x: number; y: number }) {
 		//TODO: Add different kind of connectors?
-		// if (this.#rng() <= 0.25) {
-		//   setTile(pos, rng.oneIn(3) ? Tiles.openDoor : Tiles.floor);
-		// } else {
-		//   setTile(pos, Tiles.closedDoor);
-		// }
-		this.#_carve(pos, this.tiles.door);
+
+		if (this.#rng() <= 0.25) this.#_carve(pos, this.tiles.path);
+		else this.#_carve(pos, this.tiles.door);
 	}
 
 	#_carve(pos: { x: number; y: number }, tileType?: MapTile) {
