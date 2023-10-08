@@ -41,14 +41,29 @@ import seedrandom, { PRNG } from "seedrandom";
 import Room from "./room";
 import getRandomHexColour from "./randomHexColour";
 import getContrastColour from "./contrastColour";
-import { GeneratorOptions } from "../index";
 
 type MapTile = string; // Define a type for map tiles.
+
+type dungeonOptions = {
+	seed: string;
+	maxH: number;
+	maxW: number;
+	roomTries: number;
+	extraRoomSize: number;
+	windingPercent: number;
+	tiles: {
+		wall: MapTile;
+		floor: MapTile;
+		path: MapTile;
+		door: MapTile;
+	};
+	startIndex: number;
+};
 
 export default class Dungeon {
 	map: string[][];
 	#rng: PRNG;
-	tiles: GeneratorOptions["tiles"];
+	tiles: dungeonOptions["tiles"];
 	bounds: { height: number; width: number };
 	rooms: Set<Room>;
 	_regions: number[][];
@@ -62,7 +77,7 @@ export default class Dungeon {
 		roomTries: number,
 		extraRoomSize: number,
 		windingPercent: number,
-		tiles: GeneratorOptions["tiles"],
+		tiles: dungeonOptions["tiles"],
 		startIndex: number
 	) {
 		this.#rng = seedrandom(seed);

@@ -116,20 +116,20 @@ function simpleDungeon(options?: GeneratorOptions) {
  */
 
 type GeneratorOptions = {
-	seed: string;
-	maxH: number;
-	maxW: number;
-	type: string;
-	roomTries: number;
-	extraRoomSize: number;
-	windingPercent: number;
-	tiles: {
+	seed?: string;
+	maxH?: number;
+	maxW?: number;
+	type?: string;
+	roomTries?: number;
+	extraRoomSize?: number;
+	windingPercent?: number;
+	tiles?: {
 		floor: string;
 		path: string;
 		wall: string;
 		door: string;
 	};
-	startIndex: number;
+	startIndex?: number;
 };
 
 export { GeneratorOptions };
