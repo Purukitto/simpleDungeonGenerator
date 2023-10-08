@@ -66,8 +66,8 @@ export default class Dungeon {
 	tiles: dungeonOptions["tiles"];
 	bounds: { height: number; width: number };
 	rooms: Set<Room>;
-	_regions: number[][];
-	windingPercent: number;
+	#regions: number[][];
+	#windingPercent: number;
 	#currentRegion = -1;
 
 	constructor(
@@ -88,12 +88,12 @@ export default class Dungeon {
 				return tiles.wall;
 			});
 		});
-		this._regions = Array.from({ length: maxH }, () => {
+		this.#regions = Array.from({ length: maxH }, () => {
 			return Array.from({ length: maxW }, () => {
 				return -1;
 			});
 		});
-		this.windingPercent = windingPercent;
+		this.#windingPercent = windingPercent;
 		this.rooms = new Set();
 
 		this.#_addRoom(roomTries, extraRoomSize, startIndex);
@@ -366,7 +366,7 @@ export default class Dungeon {
 				let dir: string;
 				if (
 					unmadeCells.includes(lastDir) &&
-					Math.floor(this.#rng() * 101) > this.windingPercent //TODO: Revisit this logic, not a big influence
+					Math.floor(this.#rng() * 101) > this.#windingPercent //TODO: Revisit this logic, not a big influence
 				) {
 					dir = lastDir;
 				} else {
@@ -453,7 +453,7 @@ export default class Dungeon {
 				for (const dir of ["N", "S", "E", "W"]) {
 					const neighborPos = this.#_addDirection(pos, dir)!;
 					const region =
-						this._regions[neighborPos.y]![neighborPos.x]!;
+						this.#regions[neighborPos.y]![neighborPos.x]!;
 					if (region > 0) regions.add(region);
 				}
 
@@ -538,7 +538,7 @@ export default class Dungeon {
 		const row = this.map[pos.y];
 		if (row) {
 			row[pos.x] = tileType;
-			this._regions[pos.y]![pos.x] = this.#currentRegion;
+			this.#regions[pos.y]![pos.x] = this.#currentRegion;
 		}
 	}
 
