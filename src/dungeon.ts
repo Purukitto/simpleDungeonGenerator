@@ -60,6 +60,8 @@ type dungeonOptions = {
 	startIndex: number;
 };
 
+// TODO: EXPORT CLASS TYPE?
+
 export default class Dungeon {
 	map: string[][];
 	#rng: PRNG;
