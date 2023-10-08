@@ -2,19 +2,25 @@
 	"name": "simpledungeongenerator",
 	"version": "0.8.0",
 	"license": "MIT",
+	"type": "module",
 	"main": "dist/index.js",
 	"module": "dist/index.mjs",
 	"types": "dist/index.d.ts",
 	"scripts": {
-		"build": "tsup",
+		"build": "rollup -c",
 		"release": "bun run build && changeset publish",
 		"lint": "tsc"
 	},
 	"devDependencies": {
 		"@changesets/cli": "^2.26.2",
+		"@rollup/plugin-commonjs": "^25.0.5",
+		"@rollup/plugin-node-resolve": "^15.2.2",
+		"@rollup/plugin-typescript": "^11.1.5",
 		"@types/seedrandom": "^3.0.5",
 		"bun-types": "latest",
-		"tsup": "^7.2.0",
+		"esbuild": "^0.19.4",
+		"rollup-plugin-dts": "^6.0.2",
+		"rollup-plugin-esbuild": "^6.0.2",
 		"typescript": "^5.2.2"
 	},
 	"peerDependencies": {

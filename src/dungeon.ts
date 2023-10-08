@@ -41,6 +41,7 @@ import seedrandom, { PRNG } from "seedrandom";
 import Room from "./room";
 import getRandomHexColour from "./randomHexColour";
 import getContrastColour from "./contrastColour";
+import { GeneratorOptions } from "../index";
 
 type MapTile = string; // Define a type for map tiles.
 
