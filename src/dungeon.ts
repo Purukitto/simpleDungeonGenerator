@@ -531,6 +531,11 @@ export default class Dungeon {
 	#_addJunction(pos: { x: number; y: number }) {
 		//TODO: Add different kind of connectors?
 
+		// const roomIndexMax = this.rooms.size - 1;
+
+		// if (this.#regions[pos.y]![pos.x]! <= roomIndexMax)
+		// 	this.#_carve(pos, this.tiles.door);
+
 		if (this.#rng() <= 0.25) this.#_carve(pos, this.tiles.path);
 		else this.#_carve(pos, this.tiles.door);
 	}
