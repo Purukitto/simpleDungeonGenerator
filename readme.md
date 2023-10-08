@@ -16,12 +16,6 @@ See the latest changelog [here](./CHANGELOG.md)
 npm install simpledungeongenerator
 ```
 
-### bun
-
-```bash
-bun install simpledungeongenerator
-```
-
 ### yarn
 
 ```bash
@@ -30,19 +24,34 @@ yarn add simpledungeongenerator
 
 ## Usage
 
-```typescript
-import { DungeonGenerator } from "simpledungeongenerator";
+Simplest dungeon with:
 
-const dungeon = new DungeonGenerator({
-	width: 50,
-	height: 50,
-	minRoomSize: 5,
-	maxRoomSize: 10,
-	maxRooms: 10,
-	seed: "MyProjectName",
-});
+```typescript
+// ESM
+import simpleDungeon from "simpledungeongenerator";
+
+const dungeon = new simpleDungeon();
 
 dungeon.drawToConsole();
+```
+
+```javascript
+// CJS
+const simpleDungeon = require("simpledungeongenerator").default;
+
+const dungeon = new simpleDungeon();
+
+dungeon.drawToConsole();
+```
+
+```html
+<!-- Browser -->
+<!-- path to bundle -->
+<script src="./node_modules//simpledungeongenerator/dist/bundle.js"></script>
+<script>
+	const dungeon = simpleDungeon();
+	dungeon.drawToSVG();
+</script>
 ```
 
 ## Options
