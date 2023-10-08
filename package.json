@@ -1,40 +1,41 @@
 {
-	"name": "simpledungeongenerator",
-	"version": "0.8.0",
-	"license": "MIT",
-	"type": "module",
-	"main": "dist/index.js",
-	"module": "dist/index.mjs",
-	"types": "dist/index.d.ts",
-	"scripts": {
-		"build": "rollup -c",
-		"release": "bun run build && changeset publish",
-		"lint": "tsc"
-	},
-	"devDependencies": {
-		"@changesets/cli": "^2.26.2",
-		"@rollup/plugin-commonjs": "^25.0.5",
-		"@rollup/plugin-node-resolve": "^15.2.2",
-		"@rollup/plugin-typescript": "^11.1.5",
-		"@types/seedrandom": "^3.0.5",
-		"bun-types": "latest",
-		"esbuild": "^0.19.4",
-		"rollup-plugin-dts": "^6.0.2",
-		"rollup-plugin-esbuild": "^6.0.2",
-		"typescript": "^5.2.2"
-	},
-	"peerDependencies": {
-		"typescript": "^5.0.0"
-	},
-	"author": {
-		"name": "Purukitto",
-		"url": "https://github.com/Purukitto"
-	},
-	"bugs": {
-		"url": "https://github.com/Purukitto/simpleDungeonGenerator/issues"
-	},
-	"homepage": "https://github.com/Purukitto/simpleDungeonGenerator#readme",
-	"dependencies": {
-		"seedrandom": "^3.0.5"
-	}
+  "name": "simpledungeongenerator",
+  "version": "0.8.0",
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "rollup -c",
+    "release": "bun run build && changeset publish",
+    "lint": "tsc"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.26.2",
+    "@rollup/plugin-commonjs": "^25.0.5",
+    "@rollup/plugin-node-resolve": "^15.2.2",
+    "@rollup/plugin-typescript": "^11.1.5",
+    "@types/seedrandom": "^3.0.5",
+    "bun-types": "latest",
+    "esbuild": "^0.19.4",
+    "rollup": "^4.0.2",
+    "rollup-plugin-dts": "^6.0.2",
+    "rollup-plugin-esbuild": "^6.0.2",
+    "typescript": "^5.2.2"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "author": {
+    "name": "Purukitto",
+    "url": "https://github.com/Purukitto"
+  },
+  "bugs": {
+    "url": "https://github.com/Purukitto/simpleDungeonGenerator/issues"
+  },
+  "homepage": "https://github.com/Purukitto/simpleDungeonGenerator#readme",
+  "dependencies": {
+    "seedrandom": "^3.0.5"
+  }
 }
