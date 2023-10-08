@@ -1,5 +1,14 @@
 # simpledungeongenerator
 
+## 0.9.1
+
+### Patch Changes
+
+- b676f64: New drawToSVG logic
+
+  - New colours to ensure all tiles are visible
+  - Appends a SVG to a passed container instead of returning a SVG element
+
 ## 0.9.0
 
 ### Minor Changes
