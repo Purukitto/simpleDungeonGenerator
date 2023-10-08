@@ -50,7 +50,11 @@ dungeon.drawToConsole();
 <script src="./node_modules//simpledungeongenerator/dist/bundle.js"></script>
 <script>
 	const dungeon = simpleDungeon();
-	dungeon.drawToSVG();
+	const svgContainer = document.getElementById("svg-container"); // SVG container
+	dungeon.drawToSVG(svgContainer, 5, {
+		withIndex: true,
+		withColour: true,
+	});
 </script>
 ```
 

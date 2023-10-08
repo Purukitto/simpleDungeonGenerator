@@ -142,14 +142,24 @@ export default class Dungeon {
 
 	drawToSVG(
 		svgContainer: HTMLElement,
+		cellSize = 10,
 		{ withIndex = false, withColour = false } = {}
 	) {
+		const tileColour = {
+			wall: "#000000",
+			floor: "#ff0000",
+			path: "#b1b1b1",
+			door: "#ffffcd",
+		};
+
 		if (!svgContainer) throw new Error("No SVG container provided.");
-		
+
+		if (isNaN(cellSize)) throw new Error("No cell size provided.");
+
 		const svgNS = "http://www.w3.org/2000/svg";
 		const svg = document.createElementNS(svgNS, "svg");
-		svg.setAttribute("width", (this.bounds.width * 10).toString());
-		svg.setAttribute("height", (this.bounds.height * 10).toString());
+		svg.setAttribute("width", (this.bounds.width * cellSize).toString());
+		svg.setAttribute("height", (this.bounds.height * cellSize).toString());
 
 		// Draw the base map to the SVG.
 		for (let y = 0; y < this.bounds.height; y++) {
@@ -157,19 +167,22 @@ export default class Dungeon {
 				const mapLeft = this.map[y]!;
 				const tile = mapLeft[x];
 				const rect = document.createElementNS(svgNS, "rect");
-				rect.setAttribute("x", (x * 10).toString());
-				rect.setAttribute("y", (y * 10).toString());
-				rect.setAttribute("width", "10");
-				rect.setAttribute("height", "10");
+				rect.setAttribute("x", (x * cellSize).toString());
+				rect.setAttribute("y", (y * cellSize).toString());
+				rect.setAttribute("width", cellSize.toString());
+				rect.setAttribute("height", cellSize.toString());
 				switch (tile) {
 					case this.tiles.path:
-						rect.setAttribute("fill", "#000000");
+						rect.setAttribute("fill", tileColour.path);
 						break;
 					case this.tiles.floor:
-						rect.setAttribute("fill", "#ff0000");
+						rect.setAttribute("fill", tileColour.floor);
+						break;
+					case this.tiles.door:
+						rect.setAttribute("fill", tileColour.door);
 						break;
 					default:
-						rect.setAttribute("fill", "#ffffff");
+						rect.setAttribute("fill", tileColour.wall);
 						break;
 				}
 				svg.appendChild(rect);
@@ -184,10 +197,10 @@ export default class Dungeon {
 					mapLeft[pos.x] = room.index.toString().padEnd(2, " ");
 
 					const rect = document.createElementNS(svgNS, "rect");
-					rect.setAttribute("x", (pos.x * 10).toString());
-					rect.setAttribute("y", (pos.y * 10).toString());
-					rect.setAttribute("width", "10");
-					rect.setAttribute("height", "10");
+					rect.setAttribute("x", (pos.x * cellSize).toString());
+					rect.setAttribute("y", (pos.y * cellSize).toString());
+					rect.setAttribute("width", cellSize.toString());
+					rect.setAttribute("height", cellSize.toString());
 					rect.setAttribute("fill", room.colour);
 					svg.appendChild(rect);
 				});
@@ -217,12 +230,18 @@ export default class Dungeon {
 
 				const text = document.createElementNS(svgNS, "text");
 				text.setAttribute("font-family", "sans-serif");
-				text.setAttribute("x", (centerX * 10 + 5).toString());
-				text.setAttribute("y", (centerY * 10 + 5).toString());
+				text.setAttribute(
+					"x",
+					(centerX * cellSize + cellSize / 2).toString()
+				);
+				text.setAttribute(
+					"y",
+					(centerY * cellSize + cellSize / 2).toString()
+				);
 				if (withColour)
 					text.setAttribute("fill", getContrastColour(room.colour));
 				else text.setAttribute("fill", "#ffffff");
-				text.setAttribute("font-size", "10");
+				text.setAttribute("font-size", cellSize.toString());
 				text.setAttribute("text-anchor", "middle");
 				text.setAttribute("dominant-baseline", "middle");
 				text.textContent = room.index.toString();
