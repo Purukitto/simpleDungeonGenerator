@@ -1,5 +1,11 @@
 # simpledungeongenerator
 
+## 0.9.0
+
+### Minor Changes
+
+- 0426630: New bundles setup
+
 ## 0.8.0
 
 ### Minor Changes
