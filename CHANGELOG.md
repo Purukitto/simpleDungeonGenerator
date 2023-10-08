@@ -1,5 +1,14 @@
 # simpledungeongenerator
 
+## 0.9.2
+
+### Patch Changes
+
+- 50b279b: Fix type expectations
+
+  - Make generator options optional
+  - Dungeon types are fixed
+
 ## 0.9.1
 
 ### Patch Changes
