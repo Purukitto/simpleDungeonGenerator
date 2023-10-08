@@ -140,7 +140,12 @@ export default class Dungeon {
 		console.log(displayMap.map((row) => row.join(" ")).join("\n"));
 	}
 
-	drawToSVG({ withIndex = false, withColour = false }) {
+	drawToSVG(
+		svgContainer: HTMLElement,
+		{ withIndex = false, withColour = false } = {}
+	) {
+		if (!svgContainer) throw new Error("No SVG container provided.");
+		
 		const svgNS = "http://www.w3.org/2000/svg";
 		const svg = document.createElementNS(svgNS, "svg");
 		svg.setAttribute("width", (this.bounds.width * 10).toString());
@@ -225,7 +230,8 @@ export default class Dungeon {
 			}
 		}
 
-		return svg;
+		// Append the SVG to the container.
+		svgContainer.appendChild(svg);
 	}
 
 	#_addRoom(roomTries: number, extraRoomSize: number, startIndex: number) {
