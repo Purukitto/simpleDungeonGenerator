@@ -1,5 +1,13 @@
 # simpledungeongenerator
 
+## 0.9.3
+
+### Patch Changes
+
+- 9fdf70d: Minor changes
+
+  - Make unnessary properties private for Dungeon Class
+
 ## 0.9.2
 
 ### Patch Changes
