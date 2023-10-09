@@ -1,5 +1,12 @@
 # simpledungeongenerator
 
+## 0.9.4
+
+### Patch Changes
+
+- 4380280: - `windingPercent` default value changed from `0` to `50` (Default dungeon would be more interesting looking)
+  - Junctions will always be `door` tiles for now
+
 ## 0.9.3
 
 ### Patch Changes
