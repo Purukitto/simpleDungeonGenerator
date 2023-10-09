@@ -70,7 +70,7 @@ dungeon.drawToConsole();
 | type           | string | "Base"       | Type of the dungeon to generate (Currently has no effect) |
 | roomTries      | number | 150          | Number of times to try to generate a room                 |
 | extraRoomSize  | number | 0            | Extra size to add to the room                             |
-| windingPercent | number | 0            | Percentage of the dungeon to be winding                   |
+| windingPercent | number | 50           | Percentage of the dungeon to be winding                   |
 | tiles          | Object | defaultTiles | Tiles to use for the dungeon                              |
 | startIndex     | number | 1            | Index to start the dungeon from                           |
 

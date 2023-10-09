@@ -14,7 +14,7 @@ const defaultOptions = {
 	type: "Base",
 	roomTries: 150,
 	extraRoomSize: 0,
-	windingPercent: 0,
+	windingPercent: 50,
 	tiles: defaultTiles,
 	startIndex: 1,
 };
