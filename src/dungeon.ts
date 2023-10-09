@@ -42,7 +42,12 @@ import Room from "./room";
 import getRandomHexColour from "./randomHexColour";
 import getContrastColour from "./contrastColour";
 
-type MapTile = string; // Define a type for map tiles.
+type tileInfo = {
+	tile: string;
+	type: "wall" | "floor" | "path" | "door";
+	roomIndex?: number;
+	roomColour?: string;
+}; // Define a type for map tiles.
 
 type dungeonOptions = {
 	seed: string;
@@ -52,10 +57,10 @@ type dungeonOptions = {
 	extraRoomSize: number;
 	windingPercent: number;
 	tiles: {
-		wall: MapTile;
-		floor: MapTile;
-		path: MapTile;
-		door: MapTile;
+		wall: string;
+		floor: string;
+		path: string;
+		door: string;
 	};
 	startIndex: number;
 };
@@ -63,7 +68,7 @@ type dungeonOptions = {
 // TODO: EXPORT CLASS TYPE?
 
 export default class Dungeon {
-	map: string[][];
+	map: tileInfo[][]; // Map of the dungeon. 2D array of objects
 	#rng: PRNG;
 	tiles: dungeonOptions["tiles"];
 	bounds: { height: number; width: number };
@@ -87,7 +92,7 @@ export default class Dungeon {
 		this.tiles = tiles;
 		this.map = Array.from({ length: maxH }, () => {
 			return Array.from({ length: maxW }, () => {
-				return tiles.wall;
+				return { tile: tiles.wall, type: "wall" };
 			});
 		});
 		this.#regions = Array.from({ length: maxH }, () => {
@@ -120,8 +125,9 @@ export default class Dungeon {
 
 		if (withIndex) {
 			// Create a copy of the map to display room indices without modifying the original map.
-			displayMap = this.map.map((row) => [...row]);
-			displayMap = displayMap.map((row) => row.map((tile) => tile + " "));
+			displayMap = this.map
+				.map((row) => [...row])
+				.map((row) => row.map((cell) => cell.tile + " "));
 
 			for (const room of this.rooms) {
 				room.getTiles().forEach((pos) => {
@@ -150,7 +156,7 @@ export default class Dungeon {
 			}
 		} else {
 			// If withIndex is false, just use the original map.
-			displayMap = this.map;
+			displayMap = this.map.map((row) => row.map((cell) => cell.tile));
 		}
 
 		// Print the modified or original map to the console.
@@ -182,18 +188,20 @@ export default class Dungeon {
 		for (let y = 0; y < this.bounds.height; y++) {
 			for (let x = 0; x < this.bounds.width; x++) {
 				const mapLeft = this.map[y]!;
-				const tile = mapLeft[x];
+				const cell = mapLeft[x]!;
 				const rect = document.createElementNS(svgNS, "rect");
 				rect.setAttribute("x", (x * cellSize).toString());
 				rect.setAttribute("y", (y * cellSize).toString());
 				rect.setAttribute("width", cellSize.toString());
 				rect.setAttribute("height", cellSize.toString());
-				switch (tile) {
+				switch (cell.tile) {
 					case this.tiles.path:
 						rect.setAttribute("fill", tileColour.path);
 						break;
 					case this.tiles.floor:
-						rect.setAttribute("fill", tileColour.floor);
+						if (withColour && cell.roomColour)
+							rect.setAttribute("fill", cell.roomColour);
+						else rect.setAttribute("fill", tileColour.floor);
 						break;
 					case this.tiles.door:
 						rect.setAttribute("fill", tileColour.door);
@@ -210,8 +218,8 @@ export default class Dungeon {
 		if (withColour) {
 			for (const room of this.rooms) {
 				room.getTiles().forEach((pos) => {
-					const mapLeft = this.map[pos.y]!;
-					mapLeft[pos.x] = room.index.toString().padEnd(2, " ");
+					// const mapLeft = this.map[pos.y]!;
+					// mapLeft[pos.x] = room.index.toString().padEnd(2, " ");
 
 					const rect = document.createElementNS(svgNS, "rect");
 					rect.setAttribute("x", (pos.x * cellSize).toString());
@@ -333,7 +341,12 @@ export default class Dungeon {
 				) {
 					// Carve the room into the map.
 
-					this.#_carve(pos);
+					this.#_carve(pos, {
+						tile: this.tiles.floor,
+						type: "floor",
+						roomIndex,
+						roomColour: room.colour,
+					});
 				}
 			});
 			roomIndex++;
@@ -345,7 +358,7 @@ export default class Dungeon {
 		let lastDir: string = "";
 
 		this.#currentRegion++;
-		this.#_carve(start, this.tiles.path);
+		this.#_carve(start, { tile: this.tiles.path, type: "path" });
 
 		cells.push(start);
 
@@ -378,11 +391,14 @@ export default class Dungeon {
 					)[0]!;
 				}
 
-				this.#_carve(this.#_addDirection(cell, dir)!, this.tiles.path);
-				this.#_carve(
-					this.#_addDirection(cell, dir, 2)!,
-					this.tiles.path
-				);
+				this.#_carve(this.#_addDirection(cell, dir)!, {
+					tile: this.tiles.path,
+					type: "path",
+				});
+				this.#_carve(this.#_addDirection(cell, dir, 2)!, {
+					tile: this.tiles.path,
+					type: "path",
+				});
 
 				cells.push(this.#_addDirection(cell, dir, 2)!);
 				lastDir = dir;
@@ -413,7 +429,7 @@ export default class Dungeon {
 						continue;
 
 					done = false;
-					this.#_carve(pos, this.tiles.wall);
+					this.#_carve(pos, { tile: this.tiles.wall, type: "wall" });
 				}
 			}
 		}
@@ -426,13 +442,12 @@ export default class Dungeon {
 			const neighborPos = this.#_addDirection(pos, dir)!;
 
 			if (
-				this.#_getTile(neighborPos) !== this.tiles.wall &&
 				neighborPos.x > -1 &&
 				neighborPos.x < this.bounds.width &&
 				neighborPos.y > -1 &&
 				neighborPos.y < this.bounds.height
 			) {
-				count++;
+				if (this.#_getTile(neighborPos) !== this.tiles.wall) count++;
 			}
 		}
 
@@ -535,14 +550,13 @@ export default class Dungeon {
 		// 	this.#_carve(pos, this.tiles.door);
 		// if (this.#rng() <= 0.25) this.#_carve(pos, this.tiles.path);
 		// else this.#_carve(pos, this.tiles.door);
-		this.#_carve(pos, this.tiles.door);
+		this.#_carve(pos, { tile: this.tiles.door, type: "door" });
 	}
 
-	#_carve(pos: { x: number; y: number }, tileType?: MapTile) {
-		if (!tileType) tileType = this.tiles.floor;
+	#_carve(pos: { x: number; y: number }, tileInfo: tileInfo) {
 		const row = this.map[pos.y];
 		if (row) {
-			row[pos.x] = tileType;
+			row[pos.x] = tileInfo;
 			this.#regions[pos.y]![pos.x] = this.#currentRegion;
 		}
 	}
@@ -552,8 +566,9 @@ export default class Dungeon {
 	}
 
 	#_getTile(pos: { x: number; y: number }) {
-		const row = this.map[pos.y];
-		if (row) return row[pos.x];
+		const row = this.map[pos.y]!;
+		const cell = row[pos.x]!;
+		return cell.tile;
 	}
 
 	#_addDirection(pos: { x: number; y: number }, dir: string, stepValue = 1) {
