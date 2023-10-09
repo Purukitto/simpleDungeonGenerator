@@ -214,24 +214,6 @@ export default class Dungeon {
 			}
 		}
 
-		// Draw room colours.
-		if (withColour) {
-			for (const room of this.rooms) {
-				room.getTiles().forEach((pos) => {
-					// const mapLeft = this.map[pos.y]!;
-					// mapLeft[pos.x] = room.index.toString().padEnd(2, " ");
-
-					const rect = document.createElementNS(svgNS, "rect");
-					rect.setAttribute("x", (pos.x * cellSize).toString());
-					rect.setAttribute("y", (pos.y * cellSize).toString());
-					rect.setAttribute("width", cellSize.toString());
-					rect.setAttribute("height", cellSize.toString());
-					rect.setAttribute("fill", room.colour);
-					svg.appendChild(rect);
-				});
-			}
-		}
-
 		// Draw room indices
 		if (withIndex) {
 			for (const room of this.rooms) {
@@ -423,7 +405,7 @@ export default class Dungeon {
 				for (let y = 0; y < this.bounds.height; y++) {
 					const pos = { x, y };
 					if (
-						this.#_getTile(pos) === this.tiles.wall ||
+						this.#_isWall(pos) ||
 						this.#_countAdjacentExits(pos) > 1
 					)
 						continue;
@@ -447,7 +429,7 @@ export default class Dungeon {
 				neighborPos.y > -1 &&
 				neighborPos.y < this.bounds.height
 			) {
-				if (this.#_getTile(neighborPos) !== this.tiles.wall) count++;
+				if (!this.#_isWall(neighborPos)) count++;
 			}
 		}
 
@@ -464,7 +446,7 @@ export default class Dungeon {
 				const pos = { x, y };
 
 				// Can't already be part of a region.
-				if (this.#_getTile(pos) !== this.tiles.wall) continue;
+				if (!this.#_isWall(pos)) continue;
 
 				const regions = new Set<number>();
 				for (const dir of ["N", "S", "E", "W"]) {
@@ -562,13 +544,13 @@ export default class Dungeon {
 	}
 
 	#_isWall(pos: { x: number; y: number }) {
-		return this.#_getTile(pos) === this.tiles.wall;
+		return this.#_getTile(pos) === "wall";
 	}
 
 	#_getTile(pos: { x: number; y: number }) {
 		const row = this.map[pos.y]!;
 		const cell = row[pos.x]!;
-		return cell.tile;
+		return cell.type;
 	}
 
 	#_addDirection(pos: { x: number; y: number }, dir: string, stepValue = 1) {
