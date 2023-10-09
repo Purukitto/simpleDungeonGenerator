@@ -102,4 +102,4 @@ Pull requests are welcome. For major changes, please open an issue first to disc
 -   [seedrandom](https://github.com/davidbau/seedrandom) - Seedable random number generator
 -   [Article](https://journal.stuffwithstuff.com/2014/12/21/rooms-and-mazes/) - Fabulous article on dungeon generation
 -   [changesets](https://github.com/changesets/changesets/tree/main) - Used for managing changelogs and releases
--   [tsup](https://github.com/egoist/tsup) - Used for bundling the library
+-   [Rollup](https://rollupjs.org/) - Used for bundling the library
