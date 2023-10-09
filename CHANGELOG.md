@@ -1,5 +1,11 @@
 # simpledungeongenerator
 
+## 0.9.6
+
+### Patch Changes
+
+- 0ba6a02: Update readme for new array
+
 ## 0.9.5
 
 ### Patch Changes
