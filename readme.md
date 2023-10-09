@@ -6,7 +6,7 @@ Highly configurable, but with sensible defaults.
 
 ![GitHub release (with filter)](https://img.shields.io/github/v/release/Purukitto/simpleDungeonGenerator) ![GitHub issues](https://img.shields.io/github/issues/purukitto/simpleDungeonGenerator) ![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/purukitto/simpleDungeonGenerator/main.yml) [![npm](https://img.shields.io/npm/v/simpledungeongenerator)](https://www.npmjs.com/package/simpledungeongenerator) ![npm bundle size](https://img.shields.io/bundlephobia/min/simpledungeongenerator)
 
-Demo: https://chic-gingersnap-c6cfbb.netlify.app/
+Demo: https://purukitto.github.io/SDGdemo/
 
 See the latest changelog [here](./CHANGELOG.md)
 
