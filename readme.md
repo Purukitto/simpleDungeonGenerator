@@ -78,7 +78,7 @@ dungeon.drawToConsole();
 
 | Property | Type       | Description                              |
 | -------- | ---------- | ---------------------------------------- |
-| map      | string[][] | A 2D array representing the dungeon map. |
+| map      | object[][] | A 2D array representing the dungeon map. |
 | rooms    | Room[]     | An array of rooms in the dungeon         |
 | tiles    | Object     | The tiles used for the dungeon           |
 
